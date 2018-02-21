@@ -46,11 +46,6 @@ A ```.2dl``` file is a series of *definitions*.
   * Parameters: a list of strings or numbers (optional)
 
 ## Complete example
-In this example we define 3 types:
-* ```Individual``` is a composite object
-* ```Individuals``` represents a list of ```Individual```
-* ```accountNumber``` is a type alias for a ```string```.
-
 ```
 Individual: object {
 	required firstName: string
@@ -63,3 +58,8 @@ Individuals: array<Individual>
 
 accountNumber: string
 ```
+
+In this example we define 3 types:
+* ```Individual``` is a composite object
+* ```Individuals``` represents a list of ```Individual```
+* ```accountNumber``` is a type alias for a ```string```.
