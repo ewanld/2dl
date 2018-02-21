@@ -1,0 +1,23 @@
+// TODO: changer annotation<empty> en annotation<boolean>
+// Allowed children types: annotation, modifier
+type: type composite {
+	typeParamCount: annotation<int>
+	minTypeParamCount: annotation<int>
+	maxTypeParamCount: annotation<int>
+	composite: annotation<empty>
+	extends: annotation<string>
+}
+
+annotation: type typeParamCount(1) {
+	required: annotation<empty>
+}
+
+modifier: type
+
+any: type
+empty: type
+number: type
+int: type
+string: type
+
+variadic: type typeParamCount(1)
