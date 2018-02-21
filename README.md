@@ -21,6 +21,7 @@ A ```.2dl``` file is a series of *definitions*.
   * Type parameters (optional)
   * Type annotations (optional)
   * Sub-defintions (optional)
+  
   Example, without sub-definitions:
   
   ```
@@ -43,7 +44,7 @@ A ```.2dl``` file is a series of *definitions*.
   
 * Each type annotation has:
   * A name
-  * Parameters: a list of strings or numbers (optional)
+  * Parameters: a comma-separated list of strings, numbers or booleans, enclosed by parentheses. (optional; if missing, it is equivalent to the 'true' boolean value).
 
 ## Complete example
 ```
