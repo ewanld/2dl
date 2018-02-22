@@ -117,28 +117,13 @@ public class ToodleValidator extends ToodleVisitorWithContext {
 
 			// validate annotation parameters count
 			if (annotationParametersType.getName().equals("empty")) {
-				validateParamCount(defName, annotation, 0);
+				validateParamCount(defName, annotation, 0, 1);
 			} else if (!annotationParametersType.getName().equals("variadic")) {
 				validateParamCount(defName, annotation, 1);
 			}
 
 			// validate annotation parameters type
-			if (annotationParametersType.getName().equals("any")) {
-				// no op
-			} else if (annotationParametersType.getName().equals("empty")) {
-				annotation.getStringParams();
-			} else if (annotationParametersType.getName().equals("string")) {
-				annotation.getStringParams();
-			} else if (annotationParametersType.getName().equals("number")) {
-				annotation.getBigDecimalParams();
-			} else if (annotationParametersType.getName().equals("int")) {
-				annotation.getIntParams();
-			} else if (annotationParametersType.getName().equals("variadic")) {
-				validateParamType(typeName, annotation, annotationParametersType);
-			} else {
-				error("%s, annotation %s: invalid type for parameters: %", defName, annotation.getName(),
-						annotationParametersType.getName());
-			}
+			validateParamType(typeName, annotation, annotationParametersType);
 		}
 
 		return VisitResult.CONTINUE;
@@ -164,10 +149,20 @@ public class ToodleValidator extends ToodleVisitorWithContext {
 		return res;
 	}
 
-	private void validateParamCount(String typeName, TypeAnnotation annotation, int expectedParameterCount) {
-		if (annotation.getObjectParams().size() != expectedParameterCount) {
-			error("%s, annotation %s: expected 1 parameter, got %s", typeName, annotation.getName(),
-					annotation.getObjectParams().size());
+	private void validateParamCount(String typeName, TypeAnnotation annotation, int expectedParamCount) {
+		final int paramCount = annotation.getObjectParams().size();
+		if (paramCount != expectedParamCount) {
+			error("%s, annotation %s: expected %s parameters, got %s", typeName, annotation.getName(),
+					expectedParamCount, paramCount);
+		}
+	}
+
+	private void validateParamCount(String typeName, TypeAnnotation annotation, int minParamCount,
+			int maxParamCount) {
+		final int paramCount = annotation.getObjectParams().size();
+		if (paramCount < minParamCount || paramCount > maxParamCount) {
+			error("%s, annotation %s: expected between %s and %s parameters, got %s", typeName, annotation.getName(),
+					minParamCount, maxParamCount, paramCount);
 		}
 	}
 
@@ -185,7 +180,7 @@ public class ToodleValidator extends ToodleVisitorWithContext {
 		} else if (expectedType.getName().equals("variadic")) {
 			validateParamType(typeName, annotation, expectedType.getTypeParams().get(0));
 		} else {
-			error("%s, annotation %s: invalid type for parameters: %", typeName, annotation.getName(),
+			error("%s, annotation %s: invalid type for parameters: %s", typeName, annotation.getName(),
 					expectedType.getName());
 		}
 	}
