@@ -202,6 +202,15 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 			annotation.getBigDecimalParams();
 		} else if (expectedType.getName().equals("int")) {
 			annotation.getIntParams();
+		} else if (expectedType.getName().equals("enum")) {
+			final Set<String> enumValues_allowed = new HashSet<>(expectedType.getAnnotation("of").getStringParams());
+			final List<String> enumValues_actual = annotation.getStringParams();
+			for (final String value : enumValues_actual) {
+				if (!enumValues_allowed.contains(value))
+					error("%s, annotation %s: invalid enum value '%s'. Must be one of: %s", defName,
+							annotation.getName(), value,
+							enumValues_allowed.stream().collect(Collectors.joining(", ")));
+			}
 		} else if (expectedType.getName().equals("variadic")) {
 			validateParamType(defName, annotation, expectedType.getTypeParams().get(0));
 		} else {
