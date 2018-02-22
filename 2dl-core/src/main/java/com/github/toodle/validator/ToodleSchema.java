@@ -44,7 +44,8 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 	@Override
 	protected VisitResult onVisit(Type type, String identifier) {
 		final String typeName = type.getName();
-		final String defName = context.getClosest(Definition.class).getName();
+		final Definition definition = context.getClosest(Definition.class);
+		final String defName = definition.getName();
 
 		Type typeSchema = typeSchemas.get(typeName);
 		if (typeSchema == null) typeSchema = schemaForUnknownType;
@@ -53,11 +54,18 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 			return VisitResult.CONTINUE;
 		}
 
+		validateAbstractModifier(defName, type, typeSchema);
 		validateTypeParamCount(defName, type, typeSchema);
 		validateCompositeAnnotation(defName, type, typeSchema);
 		validateTypeAnnotations(defName, type, typeSchema);
 
 		return VisitResult.CONTINUE;
+	}
+
+	private void validateAbstractModifier(String defName, Type type, Type typeSchema) {
+		if (typeSchema.getAnnotation("abstract") != null)
+			error("%s: cannot be defined of type '%s' because '%s' is abstract.", defName, type.getName(),
+					type.getName());
 	}
 
 	private void validateTypeAnnotations(final String defName, Type type, Type typeSchema) {

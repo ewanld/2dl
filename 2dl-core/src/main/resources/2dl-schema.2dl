@@ -5,6 +5,7 @@ type: type composite {
 	maxTypeParamCount: annotation<int>
 	composite: annotation<bool>
 	extends: annotation<string>
+	abstract: annotation<bool>
 }
 
 annotation: type typeParamCount(1) {
