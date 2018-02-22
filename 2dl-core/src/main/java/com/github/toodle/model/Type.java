@@ -18,6 +18,8 @@ import com.github.visitorj.Visitable;
 import com.github.visitorj.VisitableList;
 
 public class Type implements Visitable<ToodleVisitor> {
+	private static final String IDENTIFIER_TYPE_PARAM = "TYPE_PARAM";
+	private static final String IDENTIFIER_SUB_DEFINITION = "SUB_DEFINITION";
 	private String name;
 	private final Map<String, TypeAnnotation> annotations = new HashMap<>();
 	private final List<Definition> children = new ArrayList<>();
@@ -30,8 +32,8 @@ public class Type implements Visitable<ToodleVisitor> {
 		this.name = name;
 		this.parent = parent;
 		visitableChildren.add(annotations.values());
-		visitableChildren.add(children, "children");
-		visitableChildren.add(typeParams, "typeParams");
+		visitableChildren.add(children, IDENTIFIER_SUB_DEFINITION);
+		visitableChildren.add(typeParams, IDENTIFIER_TYPE_PARAM);
 	}
 
 	public Type(Type parent) {
