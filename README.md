@@ -66,13 +66,13 @@ In this example we define 3 types:
 * ```accountNumber``` is a type alias for a ```string```.
 
 ## 2dl schema
-It is possible to validate a 2dl file against a schema. The schema itself is a 2dl file. While there are no semantics associated with a 2dl file in general, a 2dl schema is defined by specific rules.
+It is possible to validate a 2dl definitions against a schema. The schema itself is a 2dl file. While there are no semantics associated with 2dl definitions in general, a 2dl schema is defined by specific rules.
 * The most basic definition has the form ```name: type```. It defines a new type with no type parameters, no children and no type annotations:
 
 <table>
 	<tr>
 	<th>2dl schema</th>
-	<th>2dl file</th>
+	<th>2dl definition</th>
 	<th>Valid?</th>
 	</tr>
 	<tr>
