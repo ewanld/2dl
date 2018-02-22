@@ -188,12 +188,10 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		} else if (expectedType.getName().equals("bool")) {
 			final List<String> params = annotation.getStringParams();
 			// if params is empty, we assume a 'true' value
-			if (!params.isEmpty()) {
-				for (final String param : params) {
-					if (!param.equals("true") && !param.equals("false")) {
-						error("%s, annotation %s: was expecting 'true' or 'false', got '%s'", defName,
-								annotation.getName(), param);
-					}
+			for (final String param : params) {
+				if (!param.equals("true") && !param.equals("false")) {
+					error("%s, annotation %s: was expecting 'true' or 'false', got '%s'", defName,
+							annotation.getName(), param);
 				}
 			}
 		} else if (expectedType.getName().equals("string")) {
