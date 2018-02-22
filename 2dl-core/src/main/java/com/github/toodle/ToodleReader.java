@@ -12,7 +12,7 @@ import com.github.toodle.antlr.MyToodleListener;
 import com.github.toodle.model.Definition;
 import com.github.toodle.model.Type;
 import com.github.toodle.validator.ToodleValidationException;
-import com.github.toodle.validator.ToodleValidator;
+import com.github.toodle.validator.ToodleSchema;
 
 public class ToodleReader {
 	private final Reader definitionsReader;
@@ -40,13 +40,13 @@ public class ToodleReader {
 			try (final InputStreamReader metaSchemaReader = new InputStreamReader(
 					ToodleReader.class.getClassLoader().getResourceAsStream("2dl-schema.2dl"), "UTF-8")) {
 				final Collection<Definition> metaSchemaDefinitions = readDefinitions(metaSchemaReader);
-				final ToodleValidator schemaValidator = new ToodleValidator(metaSchemaDefinitions);
+				final ToodleSchema schemaValidator = new ToodleSchema(metaSchemaDefinitions);
 				if (!schemaValidator.validate(schemaDefinitions)) {
 					throw new ToodleValidationException(schemaValidator.getViolations());
 				}
 
 				// validate definitions against schema
-				final ToodleValidator validator = new ToodleValidator(schemaDefinitions);
+				final ToodleSchema validator = new ToodleSchema(schemaDefinitions);
 				if (!validator.validate(definitions)) {
 					throw new ToodleValidationException(validator.getViolations());
 				}

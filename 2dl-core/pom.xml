@@ -52,6 +52,12 @@
 			<artifactId>visitorj-runtime</artifactId>
 			<version>0.1.0</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.github.ewanld.visitorj</groupId>
+			<artifactId>visitorj-codegen</artifactId>
+			<version>0.1.0</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.unbescape</groupId>

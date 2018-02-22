@@ -4,18 +4,18 @@ type: type composite {
 	typeParamCount: annotation<int>
 	minTypeParamCount: annotation<int>
 	maxTypeParamCount: annotation<int>
-	composite: annotation<empty>
+	composite: annotation<bool>
 	extends: annotation<string>
 }
 
 annotation: type typeParamCount(1) {
-	required: annotation<empty>
+	required: annotation<bool>
 }
 
 modifier: type
 
 any: type
-empty: type
+bool: type
 number: type
 int: type
 string: type
