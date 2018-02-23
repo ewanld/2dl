@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.antlr.v4.runtime.atn.SemanticContext.PrecedencePredicate;
-
 import com.github.toodle.model.Definition;
 import com.github.toodle.model.Type;
 import com.github.toodle.model.TypeAnnotation;
@@ -47,8 +45,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		final Definition definition = context.getClosest(Definition.class);
 		final String defName = definition.getName();
 
-		Type typeSchema = typeSchemas.get(typeName);
-		if (typeSchema == null) typeSchema = schemaForUnknownType;
+		final Type typeSchema = getSchema(typeName);
 		if (typeSchema == null) {
 			error("Unknown type: " + typeName);
 			return VisitResult.CONTINUE;
@@ -60,6 +57,12 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		validateTypeAnnotations(defName, type, typeSchema);
 
 		return VisitResult.CONTINUE;
+	}
+
+	private Type getSchema(String typeName) {
+		Type typeSchema = typeSchemas.get(typeName);
+		if (typeSchema == null) typeSchema = schemaForUnknownType;
+		return typeSchema;
 	}
 
 	private void validateAbstractModifier(String defName, Type type, Type typeSchema) {
@@ -136,11 +139,25 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 	}
 
 	private void validateCompositeAnnotation(final String defName, Type type, Type typeSchema) {
-		final boolean composite = typeSchema.getAnnotation("composite") != null;
+		final TypeAnnotation composite_a = typeSchema.getAnnotation("composite");
+		final boolean composite = composite_a != null;
 
+		// validate that !composite imply no sub-definitions
 		final boolean composite_actual = !type.getChildren().isEmpty();
 		if (!composite && composite_actual) {
 			error("%s: no subdefinitions expected", defName);
+		}
+
+		if (composite) {
+			// validate sub-definition allowed types
+			final List<String> allowedSubTypes = composite_a.getStringParams();
+			if (!allowedSubTypes.isEmpty()) {
+				for (final Definition d : type.getChildren()) {
+					if (!isOfAnyType(d.getType().getName(), allowedSubTypes))
+						error("%s: type is %s, allowed types in this context are: %s", d.getName(),
+								d.getType().getName(), allowedSubTypes.stream().collect(Collectors.joining(", ")));
+				}
+			}
 		}
 	}
 
@@ -148,10 +165,28 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		violations.add(String.format(message, args));
 	}
 
-	public Type getBaseType(Type typeSchema) {
+	public boolean isOfType(String typeName, String expectedTypeName) {
+		if (expectedTypeName.equals(typeName)) return true;
+		final Type typeSchema = getSchema(typeName);
+		if (typeSchema == null) return false;
+		final String typeSchema_parent = getBaseTypeName(typeSchema);
+		return typeSchema_parent == null ? false : isOfType(typeSchema_parent, expectedTypeName);
+	}
+
+	public boolean isOfAnyType(String typeName, Collection<String> expectedTypeNames) {
+		return expectedTypeNames.stream().anyMatch(et -> isOfType(typeName, et));
+	}
+
+	public String getBaseTypeName(Type typeSchema) {
 		final TypeAnnotation extends_a = typeSchema.getAnnotation("extends");
-		final Type baseType = extends_a == null ? null : typeSchemas.get(extends_a.getStringParams().get(0));
-		if (extends_a != null && baseType == null) error("Unknown type: %s", extends_a.getStringParams().get(0));
+		if (extends_a == null) return null;
+		final String baseTypeName = extends_a.getStringParams().get(0);
+		return baseTypeName;
+	}
+
+	public Type getBaseType(Type typeSchema) {
+		final String baseTypeName = getBaseTypeName(typeSchema);
+		final Type baseType = typeSchemas.get(baseTypeName);
 		return baseType;
 	}
 

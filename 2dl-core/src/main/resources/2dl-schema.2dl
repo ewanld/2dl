@@ -1,10 +1,23 @@
-// Allowed children types: annotation, modifier
-type: type composite {
+type: type composite(annotation, modifier) {
+	// If set, this annotation specifies the exact number of type parameters this type can have.
 	typeParamCount: annotation<int>
+	
+	// If set, this annotation specifies the minimum number of type parameters this type can have.
 	minTypeParamCount: annotation<int>
+	
+	// If set, this annotation specifies the maximum number of type parameters this type can have. A negative value
+	// means no limit.
 	maxTypeParamCount: annotation<int>
-	composite: annotation<bool>
+	
+	// Parameters are the allowed type names for sub-definitions. If no parameters, then there is no restriction
+	// on the type of sub-definitions.
+	composite: annotation<variadic<string>>
+	// Parameter: the base type name for this type. Only annotations and modifiers are inherited from the
+	// base type.
 	extends: annotation<string>
+	
+	// This annotation means the type cannot be referenced outside of the schema. Abstract types are useful in order to
+	// share annotations and modifiers among types.
 	abstract: annotation<bool>
 }
 
@@ -15,11 +28,11 @@ annotation: type typeParamCount(1) {
 modifier: type
 
 any: type
-bool: type
-number: type
-int: type
-string: type
-enum: type {
+bool: type extends(any)
+number: type extends(any)
+int: type extends(number)
+string: type extends(any)
+enum: type extends(any) {
 	of: annotation<variadic<string>> required
 }
 
