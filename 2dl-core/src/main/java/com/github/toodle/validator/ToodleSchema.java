@@ -43,18 +43,17 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 	protected VisitResult onVisit(Type type, String identifier) {
 		final String typeName = type.getName();
 		final Definition definition = context.getClosest(Definition.class);
-		final String defName = definition.getName();
 
 		final Type typeSchema = getSchema(typeName);
 		if (typeSchema == null) {
-			error("Unknown type: " + typeName);
+			error(definition, "Unknown type: %s", typeName);
 			return VisitResult.CONTINUE;
 		}
 
-		validateAbstractModifier(defName, type, typeSchema);
-		validateTypeParamCount(defName, type, typeSchema);
-		validateCompositeAnnotation(defName, type, typeSchema);
-		validateTypeAnnotations(defName, type, typeSchema);
+		validateAbstractModifier(definition, type, typeSchema);
+		validateTypeParamCount(definition, type, typeSchema);
+		validateCompositeAnnotation(definition, type, typeSchema);
+		validateTypeAnnotations(definition, type, typeSchema);
 
 		return VisitResult.CONTINUE;
 	}
@@ -65,13 +64,12 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		return typeSchema;
 	}
 
-	private void validateAbstractModifier(String defName, Type type, Type typeSchema) {
-		if (typeSchema.getAnnotation("abstract") != null)
-			error("%s: cannot be defined of type '%s' because '%s' is abstract.", defName, type.getName(),
-					type.getName());
+	private void validateAbstractModifier(Definition definition, Type type, Type typeSchema) {
+		if (typeSchema.getAnnotation("abstract") != null) error(definition,
+				"cannot be defined of type '%s' because '%s' is abstract.", type.getName(), type.getName());
 	}
 
-	private void validateTypeAnnotations(final String defName, Type type, Type typeSchema) {
+	private void validateTypeAnnotations(final Definition definition, Type type, Type typeSchema) {
 		final Map<String, Definition> allowedAnnotations = getAllowedAnnotations(typeSchema);
 		// validate that all required type annotations are present
 		final List<String> requiredAnnotations = allowedAnnotations.values().stream()
@@ -80,7 +78,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		final Set<String> actualAnnotations = type.getAnnotations().keySet();
 		for (final String requiredAnnotation : requiredAnnotations) {
 			if (!actualAnnotations.contains(requiredAnnotation)) {
-				error("%s: a required annotation '%s' is missing", defName, requiredAnnotation);
+				error(definition, "a required annotation '%s' is missing", requiredAnnotation);
 			}
 		}
 
@@ -89,7 +87,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 			final Definition annotationSchema_def = allowedAnnotations.get(annotation.getName());
 			// validate that the annotation is allowed
 			if (annotationSchema_def == null) {
-				error("%s: the annotation '%s' is not allowed", defName, annotation.getName());
+				error(definition, "the annotation '%s' is not allowed", annotation.getName());
 				continue;
 			}
 			final Type annotationSchema = annotationSchema_def.getType();
@@ -97,17 +95,17 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 
 			// validate annotation parameters count
 			if (annotationParametersType.getName().equals("bool")) {
-				validateParamCount(defName, annotation, 0, 1);
+				validateParamCount(definition, annotation, 0, 1);
 			} else if (!annotationParametersType.getName().equals("variadic")) {
-				validateParamCount(defName, annotation, 1);
+				validateParamCount(definition, annotation, 1);
 			}
 
 			// validate annotation parameters type
-			validateParamType(defName, annotation, annotationParametersType);
+			validateParamType(definition, annotation, annotationParametersType);
 		}
 	}
 
-	private void validateTypeParamCount(final String defName, Type type, Type typeSchema) {
+	private void validateTypeParamCount(final Definition definition, Type type, Type typeSchema) {
 		final TypeAnnotation typeParamCount_a = typeSchema.getAnnotation("typeParamCount");
 		final TypeAnnotation minTypeParamCount_a = typeSchema.getAnnotation("minTypeParamCount");
 		final TypeAnnotation maxTypeParamCount_a = typeSchema.getAnnotation("maxTypeParamCount");
@@ -126,26 +124,26 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 
 		final int typeParamCount_actual = type.getTypeParams().size();
 		if (typeParamCount != null && typeParamCount != typeParamCount_actual) {
-			error("%s: expected %s type parameters, got %s", defName, typeParamCount, typeParamCount_actual);
+			error(definition, "expected %s type parameters, got %s", typeParamCount, typeParamCount_actual);
 		}
 		if (typeParamCount_actual < minTypeParamCount) {
-			error("%s: expected at least %s type parameters, got %s", defName, minTypeParamCount,
+			error(definition, "expected at least %s type parameters, got %s", minTypeParamCount,
 					typeParamCount_actual);
 		}
 		if (typeParamCount_actual > maxTypeParamCount) {
-			error("%s: expected at most %s type parameters, got %s", defName, maxTypeParamCount,
+			error(definition, "expected at most %s type parameters, got %s", maxTypeParamCount,
 					typeParamCount_actual);
 		}
 	}
 
-	private void validateCompositeAnnotation(final String defName, Type type, Type typeSchema) {
+	private void validateCompositeAnnotation(final Definition definition, Type type, Type typeSchema) {
 		final TypeAnnotation composite_a = typeSchema.getAnnotation("composite");
 		final boolean composite = composite_a != null;
 
 		// validate that !composite imply no sub-definitions
 		final boolean composite_actual = !type.getChildren().isEmpty();
 		if (!composite && composite_actual) {
-			error("%s: no subdefinitions expected", defName);
+			error(definition, "no subdefinitions expected");
 		}
 
 		if (composite) {
@@ -154,15 +152,16 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 			if (!allowedSubTypes.isEmpty()) {
 				for (final Definition d : type.getChildren()) {
 					if (!isOfAnyType(d.getType().getName(), allowedSubTypes))
-						error("%s: type is %s, allowed types in this context are: %s", d.getName(),
-								d.getType().getName(), allowedSubTypes.stream().collect(Collectors.joining(", ")));
+						error(d, "type is %s, allowed types in this context are: %s", d.getType().getName(),
+								allowedSubTypes.stream().collect(Collectors.joining(", ")));
 				}
 			}
 		}
 	}
 
-	private void error(String message, Object... args) {
-		violations.add(String.format(message, args));
+	private void error(Definition definition, String message, Object... args) {
+		violations.add("Line " + definition.getLocation().getLine() + ": " + definition.getName() + ": "
+				+ String.format(message, args));
 	}
 
 	public boolean isOfType(String typeName, String expectedTypeName) {
@@ -192,7 +191,8 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 
 	public Map<String, Definition> getAllowedAnnotations(Type typeSchema) {
 		final Map<String, Definition> res = new HashMap<>(typeSchema.getChildrenOfType("annotation"));
-		final Type baseType = getBaseType(typeSchema);
+		final String baseTypeName = getBaseTypeName(typeSchema);
+		final Type baseType = typeSchemas.get(baseTypeName);
 		if (baseType != null) {
 			res.putAll(getAllowedAnnotations(baseType));
 		}
@@ -202,38 +202,40 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 	public Set<String> getAllowedModifiers(final Type parentSchema) {
 		if (parentSchema == null) return allowedGlobalModifiers;
 		final HashSet<String> res = new HashSet<>(parentSchema.getChildrenOfType("modifier").keySet());
-		final Type baseType = getBaseType(parentSchema);
+		final String baseTypeName = getBaseTypeName(parentSchema);
+		final Type baseType = typeSchemas.get(baseTypeName);
 		if (baseType != null) {
 			res.addAll(getAllowedModifiers(baseType));
 		}
 		return res;
 	}
 
-	private void validateParamCount(String defName, TypeAnnotation annotation, int expectedParamCount) {
+	private void validateParamCount(Definition definition, TypeAnnotation annotation, int expectedParamCount) {
 		final int paramCount = annotation.getObjectParams().size();
 		if (paramCount != expectedParamCount) {
-			error("%s, annotation %s: expected %s parameters, got %s", defName, annotation.getName(),
+			error(definition, "annotation %s: expected %s parameters, got %s", annotation.getName(),
 					expectedParamCount, paramCount);
 		}
 	}
 
-	private void validateParamCount(String defName, TypeAnnotation annotation, int minParamCount, int maxParamCount) {
+	private void validateParamCount(Definition definition, TypeAnnotation annotation, int minParamCount,
+			int maxParamCount) {
 		final int paramCount = annotation.getObjectParams().size();
 		if (paramCount < minParamCount || paramCount > maxParamCount) {
-			error("%s, annotation %s: expected between %s and %s parameters, got %s", defName, annotation.getName(),
+			error(definition, "annotation %s: expected between %s and %s parameters, got %s", annotation.getName(),
 					minParamCount, maxParamCount, paramCount);
 		}
 	}
 
-	private void validateParamType(String defName, TypeAnnotation annotation, Type expectedType) {
-		if (expectedType.getName().equals("any")) {
+	private void validateParamType(Definition definition, TypeAnnotation annotation, Type expectedType) {
+		if (expectedType.getName().equals("primitive")) {
 			// no op
 		} else if (expectedType.getName().equals("bool")) {
 			final List<String> params = annotation.getStringParams();
 			// if params is empty, we assume a 'true' value
 			for (final String param : params) {
 				if (!param.equals("true") && !param.equals("false")) {
-					error("%s, annotation %s: was expecting 'true' or 'false', got '%s'", defName,
+					error(definition, "%s, annotation %s: was expecting 'true' or 'false', got '%s'",
 							annotation.getName(), param);
 				}
 			}
@@ -247,15 +249,14 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 			final Set<String> enumValues_allowed = new HashSet<>(expectedType.getAnnotation("of").getStringParams());
 			final List<String> enumValues_actual = annotation.getStringParams();
 			for (final String value : enumValues_actual) {
-				if (!enumValues_allowed.contains(value))
-					error("%s, annotation %s: invalid enum value '%s'. Must be one of: %s", defName,
-							annotation.getName(), value,
-							enumValues_allowed.stream().collect(Collectors.joining(", ")));
+				if (!enumValues_allowed.contains(value)) error(definition,
+						"%s, annotation %s: invalid enum value '%s'. Must be one of: %s", annotation.getName(), value,
+						enumValues_allowed.stream().collect(Collectors.joining(", ")));
 			}
 		} else if (expectedType.getName().equals("variadic")) {
-			validateParamType(defName, annotation, expectedType.getTypeParams().get(0));
+			validateParamType(definition, annotation, expectedType.getTypeParams().get(0));
 		} else {
-			error("%s, annotation %s: invalid type for parameters: %s", defName, annotation.getName(),
+			error(definition, "annotation %s: invalid type for parameters: %s", annotation.getName(),
 					expectedType.getName());
 		}
 	}
@@ -270,14 +271,13 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		} else {
 			parentSchema = typeSchemas.get(parentType.getName());
 			if (parentSchema == null) {
-				error("Unknown type: %s", parentType.getName());
+				error(definition, "Unknown type: %s", parentType.getName());
 				return VisitResult.SKIP_CHILDREN;
 			}
 		}
 		allowedModifiers = getAllowedModifiers(parentSchema);
 		for (final String modifier : definition.getModifiers()) {
-			if (!allowedModifiers.contains(modifier))
-				error("%s: Invalid modifier: %s", definition.getName(), modifier);
+			if (!allowedModifiers.contains(modifier)) error(definition, "Invalid modifier: %s", modifier);
 		}
 		return VisitResult.CONTINUE;
 	}

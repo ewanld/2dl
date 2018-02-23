@@ -22,6 +22,7 @@ import com.github.toodle.ToodleParser.StringContext;
 import com.github.toodle.ToodleParser.TypeContext;
 import com.github.toodle.ToodleParser.TypeParamsContext;
 import com.github.toodle.model.Definition;
+import com.github.toodle.model.SourceLocation;
 import com.github.toodle.model.Type;
 import com.github.toodle.model.TypeAnnotation;
 
@@ -75,7 +76,9 @@ public class MyToodleListener implements ToodleListener {
 		// definitions may or may not have a type
 		if (ctx.getChildCount() > 2) {
 			final Type parent = currentTypeDef.getParent();
-			parent.getChildren().add(new Definition(name, modifiers, currentTypeDef));
+			final Definition definition = new Definition(name, modifiers, currentTypeDef);
+			definition.setLocation(new SourceLocation("", ctx.start.getLine()));
+			parent.getChildren().add(definition);
 			currentTypeDef = parent;
 		}
 	}

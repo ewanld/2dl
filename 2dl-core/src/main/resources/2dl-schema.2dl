@@ -23,16 +23,17 @@ type: type composite(annotation, modifier) {
 
 annotation: type typeParamCount(1) {
 	required: annotation<bool>
+	default: annotation<variadic<primitive>>
 }
 
 modifier: type
 
-any: type
-bool: type extends(any)
-number: type extends(any)
+primitive: type
+bool: type extends(primitive)
+number: type extends(primitive)
 int: type extends(number)
-string: type extends(any)
-enum: type extends(any) {
+string: type extends(primitive)
+enum: type extends(primitive) {
 	of: annotation<variadic<string>> required
 }
 

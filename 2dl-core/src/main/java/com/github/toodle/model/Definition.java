@@ -17,6 +17,7 @@ public class Definition implements Visitable<ToodleVisitor> {
 	private final Set<String> modifiers = new HashSet<>();
 	private Type type;
 	private final VisitableList<ToodleVisitor> visitableChildren = new VisitableList<>();
+	private SourceLocation location;
 
 	public Definition(String name, Collection<String> modifiers, Type type) {
 		this.name = name;
@@ -71,5 +72,13 @@ public class Definition implements Visitable<ToodleVisitor> {
 		sb.append(name);
 		if (type != null) sb.append(": ").append(type.toString());
 		return sb.toString();
+	}
+
+	public SourceLocation getLocation() {
+		return location;
+	}
+
+	public void setLocation(SourceLocation location) {
+		this.location = location;
 	}
 }
