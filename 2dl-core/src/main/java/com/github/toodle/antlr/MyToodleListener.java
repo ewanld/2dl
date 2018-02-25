@@ -14,8 +14,8 @@ import org.unbescape.java.JavaEscape;
 
 import com.github.toodle.ToodleLexer;
 import com.github.toodle.ToodleListener;
-import com.github.toodle.ToodleParser.ConstraintContext;
-import com.github.toodle.ToodleParser.ConstraintParamContext;
+import com.github.toodle.ToodleParser.AnnotationContext;
+import com.github.toodle.ToodleParser.AnnotationParamContext;
 import com.github.toodle.ToodleParser.DefinitionContext;
 import com.github.toodle.ToodleParser.DefinitionsContext;
 import com.github.toodle.ToodleParser.StringContext;
@@ -99,7 +99,7 @@ public class MyToodleListener implements ToodleListener {
 			}
 			return s;
 
-		} else if (ctx instanceof ConstraintParamContext) {
+		} else if (ctx instanceof AnnotationParamContext) {
 			final ParserRuleContext ctx_expr = (ParserRuleContext) ctx;
 			final Object child = fromContext(ctx_expr.getChild(0));
 			return child;
@@ -157,23 +157,23 @@ public class MyToodleListener implements ToodleListener {
 	}
 
 	@Override
-	public void enterConstraint(ConstraintContext ctx) {
+	public void enterAnnotation(AnnotationContext ctx) {
 		currentConstraint = new TypeAnnotation();
 	}
 
 	@Override
-	public void exitConstraint(ConstraintContext ctx) {
+	public void exitAnnotation(AnnotationContext ctx) {
 		final String name = ctx.getChild(0).getText();
 		currentConstraint.setName(name);
 		currentTypeDef.getAnnotations().put(name, currentConstraint);
 	}
 
 	@Override
-	public void enterConstraintParam(ConstraintParamContext ctx) {
+	public void enterAnnotationParam(AnnotationParamContext ctx) {
 	}
 
 	@Override
-	public void exitConstraintParam(ConstraintParamContext ctx) {
+	public void exitAnnotationParam(AnnotationParamContext ctx) {
 		currentConstraint.getObjectParams().add(fromContext(ctx));
 	}
 

@@ -5,25 +5,25 @@ grammar Toodle;
 }
 
 definitions
-	: '\n'* definition? ('\n'+ definition)* '\n'*
+	: NL* definition? (NL+ definition)* NL*
 	;
-	
+
 definition
 	: IDENT+ (':' type)?
 	;
 
 type
-	: IDENT ('<' typeParams '>')? constraint* ('{' definitions '}')?
+	: IDENT ('<' typeParams '>')? annotation* ('{' definitions '}')?
 	;
 
 typeParams
 	: type (',' type)*;
 	
-constraint
-	: IDENT ('(' constraintParam (',' constraintParam)* ')')?
+annotation
+	: IDENT ('(' annotationParam (',' annotationParam)* ')')?
 	;
 
-constraintParam:
+annotationParam:
 	NUMBER | string
 	;
 
@@ -68,7 +68,8 @@ IDENT
 	: [a-zA-Z0-9_\-*]+
 	;
 
-WS : [ \r\t]+ -> skip ;
+NL: [\r\n];
+WS : [ \t]+ -> skip ;
 CONTINUATION_LINE: '\\' [\r\n]+ -> skip;
 COMMENT:            '/*' .*? '*/'    -> channel(HIDDEN);
 LINE_COMMENT:       '//' ~[\r\n]*    -> channel(HIDDEN);
