@@ -168,7 +168,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		if (expectedTypeName.equals(typeName)) return true;
 		final Type typeSchema = getSchema(typeName);
 		if (typeSchema == null) return false;
-		final String typeSchema_parent = getBaseTypeName(typeSchema);
+		final String typeSchema_parent = getSupertypeName(typeSchema);
 		return typeSchema_parent == null ? false : isOfType(typeSchema_parent, expectedTypeName);
 	}
 
@@ -176,25 +176,25 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		return expectedTypeNames.stream().anyMatch(et -> isOfType(typeName, et));
 	}
 
-	public String getBaseTypeName(Type typeSchema) {
+	public String getSupertypeName(Type typeSchema) {
 		final TypeAnnotation extends_a = typeSchema.getAnnotation("extends");
 		if (extends_a == null) return null;
-		final String baseTypeName = extends_a.getStringParams().get(0);
-		return baseTypeName;
+		final String supertypeName = extends_a.getStringParams().get(0);
+		return supertypeName;
 	}
 
-	public Type getBaseType(Type typeSchema) {
-		final String baseTypeName = getBaseTypeName(typeSchema);
-		final Type baseType = typeSchemas.get(baseTypeName);
-		return baseType;
+	public Type getSupertype(Type typeSchema) {
+		final String supertypeName = getSupertypeName(typeSchema);
+		final Type supertype = typeSchemas.get(supertypeName);
+		return supertype;
 	}
 
 	public Map<String, Definition> getAllowedAnnotations(Type typeSchema) {
 		final Map<String, Definition> res = new HashMap<>(typeSchema.getChildrenOfType("annotation"));
-		final String baseTypeName = getBaseTypeName(typeSchema);
-		final Type baseType = typeSchemas.get(baseTypeName);
-		if (baseType != null) {
-			res.putAll(getAllowedAnnotations(baseType));
+		final String supertypeName = getSupertypeName(typeSchema);
+		final Type supertype = typeSchemas.get(supertypeName);
+		if (supertype != null) {
+			res.putAll(getAllowedAnnotations(supertype));
 		}
 		return res;
 	}
@@ -202,10 +202,10 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 	public Set<String> getAllowedModifiers(final Type parentSchema) {
 		if (parentSchema == null) return allowedGlobalModifiers;
 		final HashSet<String> res = new HashSet<>(parentSchema.getChildrenOfType("modifier").keySet());
-		final String baseTypeName = getBaseTypeName(parentSchema);
-		final Type baseType = typeSchemas.get(baseTypeName);
-		if (baseType != null) {
-			res.addAll(getAllowedModifiers(baseType));
+		final String supertypeName = getSupertypeName(parentSchema);
+		final Type supertype = typeSchemas.get(supertypeName);
+		if (supertype != null) {
+			res.addAll(getAllowedModifiers(supertype));
 		}
 		return res;
 	}
