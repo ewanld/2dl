@@ -151,7 +151,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 			final List<String> allowedSubTypes = composite_a.getStringParams();
 			if (!allowedSubTypes.isEmpty()) {
 				for (final Definition d : type.getChildren()) {
-					if (!isOfAnyType(d.getType().getName(), allowedSubTypes))
+					if (!isSubstitute(d.getType().getName(), allowedSubTypes))
 						error(d, "type is %s, allowed types in this context are: %s", d.getType().getName(),
 								allowedSubTypes.stream().collect(Collectors.joining(", ")));
 				}
@@ -164,16 +164,22 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 				+ String.format(message, args));
 	}
 
-	public boolean isOfType(String typeName, String expectedTypeName) {
+	/**
+	 * Returns whether {@code typeName} is either equal to {@code expectedTypeName}, or is a subtype of it.
+	 */
+	public boolean isSubstitute(String typeName, String expectedTypeName) {
 		if (expectedTypeName.equals(typeName)) return true;
 		final Type typeSchema = getSchema(typeName);
 		if (typeSchema == null) return false;
 		final String typeSchema_parent = getSupertypeName(typeSchema);
-		return typeSchema_parent == null ? false : isOfType(typeSchema_parent, expectedTypeName);
+		return typeSchema_parent == null ? false : isSubstitute(typeSchema_parent, expectedTypeName);
 	}
 
-	public boolean isOfAnyType(String typeName, Collection<String> expectedTypeNames) {
-		return expectedTypeNames.stream().anyMatch(et -> isOfType(typeName, et));
+	/**
+	 * Returns whether {@code typeName} is a valid substitute for any of the {@code expectedTypeNames}.
+	 */
+	public boolean isSubstitute(String typeName, Collection<String> expectedTypeNames) {
+		return expectedTypeNames.stream().anyMatch(et -> isSubstitute(typeName, et));
 	}
 
 	public String getSupertypeName(Type typeSchema) {
