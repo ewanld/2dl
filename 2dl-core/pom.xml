@@ -159,7 +159,7 @@
 							<packageName>com.github.toodle.services</packageName>
 							<visitorName>Toodle</visitorName>
 							<classes>
-								<class>com.github.toodle.model.Definition</class>
+								<class>com.github.toodle.model.TypeDefinition</class>
 								<class>com.github.toodle.model.Type</class>
 								<class>com.github.toodle.model.TypeAnnotation</class>
 							</classes>
