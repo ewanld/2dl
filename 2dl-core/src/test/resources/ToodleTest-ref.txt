@@ -1,0 +1,96 @@
+[
+  {
+    "name": "database",
+    "type": {
+      "name": "object",
+      "subDefinitions": [
+        {
+          "name": "name",
+          "type": {
+            "name": "string"
+          }
+        },
+        {
+          "name": "tables",
+          "type": {
+            "name": "array",
+            "typeParams": [
+              {
+                "name": "table"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "table",
+    "type": {
+      "name": "object",
+      "subDefinitions": [
+        {
+          "name": "name",
+          "type": {
+            "name": "string"
+          }
+        },
+        {
+          "name": "type",
+          "type": {
+            "name": "string"
+          }
+        },
+        {
+          "name": "columns",
+          "type": {
+            "name": "array",
+            "typeParams": [
+              {
+                "name": "column"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "column",
+    "type": {
+      "name": "object",
+      "subDefinitions": [
+        {
+          "name": "name",
+          "type": {
+            "name": "string"
+          }
+        },
+        {
+          "name": "typeCode",
+          "type": {
+            "name": "int"
+          }
+        },
+        {
+          "name": "typeName",
+          "type": {
+            "name": "string"
+          }
+        },
+        {
+          "name": "nullable",
+          "type": {
+            "name": "bool"
+          }
+        },
+        {
+          "name": "size",
+          "type": {
+            "name": "int"
+          }
+        }
+      ]
+    }
+  }
+]

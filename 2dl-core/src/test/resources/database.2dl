@@ -1,0 +1,20 @@
+database: object {
+	name: string
+	tables: array<table>
+}
+
+alias nstring = string nullable
+
+table: object {
+	name: string
+	type: string
+	columns: array<column>
+}
+
+column: object {
+	name: string
+	typeCode: int
+	typeName: string
+	nullable: bool
+	size: int
+}
