@@ -3,16 +3,14 @@ package com.github.toodle;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.Collection;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import com.github.toodle.antlr.MyToodleListener;
-import com.github.toodle.model.TypeDefinition;
 import com.github.toodle.model.Type;
-import com.github.toodle.validator.ToodleValidationException;
 import com.github.toodle.validator.ToodleSchema;
+import com.github.toodle.validator.ToodleValidationException;
 
 public class ToodleReader {
 	private final Reader definitionsReader;
@@ -31,7 +29,7 @@ public class ToodleReader {
 		this(definitionsReader, null);
 	}
 
-	public Collection<TypeDefinition> read() throws IOException {
+	public Type read() throws IOException {
 		final Type rootType = read(definitionsReader);
 		if (schemaReader != null) {
 			final Type schemaRootType = read(schemaReader);
@@ -52,7 +50,7 @@ public class ToodleReader {
 				}
 			}
 		}
-		return rootType.getSubDefinitions();
+		return rootType;
 	}
 
 	private static Type read(Reader reader) throws IOException {
