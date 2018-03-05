@@ -18,6 +18,7 @@ import com.github.toodle.ToodleParser.AnnotationContext;
 import com.github.toodle.ToodleParser.AnnotationParamContext;
 import com.github.toodle.ToodleParser.DefinitionContext;
 import com.github.toodle.ToodleParser.DefinitionsContext;
+import com.github.toodle.ToodleParser.StatementContext;
 import com.github.toodle.ToodleParser.StringContext;
 import com.github.toodle.ToodleParser.TypeContext;
 import com.github.toodle.ToodleParser.TypeParamsContext;
@@ -191,4 +192,14 @@ public class MyToodleListener implements ToodleListener {
 		scopes.pop();
 	}
 
+	@Override
+	public void enterStatement(StatementContext ctx) {
+		// no op
+	}
+
+	@Override
+	public void exitStatement(StatementContext ctx) {
+		// no op
+
+	}
 }
