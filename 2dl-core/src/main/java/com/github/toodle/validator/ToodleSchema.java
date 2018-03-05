@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.github.toodle.model.Definition;
+import com.github.toodle.model.TypeDefinition;
 import com.github.toodle.model.Type;
 import com.github.toodle.model.TypeAnnotation;
 import com.github.toodle.services.ToodleVisitorWithContext;
@@ -21,15 +21,15 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 	private final Set<String> allowedGlobalModifiers;
 	private final List<String> violations = new ArrayList<>();
 
-	public ToodleSchema(Collection<Definition> schemaDefinitions) {
+	public ToodleSchema(Collection<TypeDefinition> schemaDefinitions) {
 		this.typeSchemas = schemaDefinitions.stream().filter(d -> d.getType().getName().equals("type"))
-				.collect(Collectors.toMap(Definition::getName, Definition::getType));
+				.collect(Collectors.toMap(TypeDefinition::getName, TypeDefinition::getType));
 		this.allowedGlobalModifiers = schemaDefinitions.stream().filter(d -> d.getType().getName().equals("modifier"))
 				.map(d -> d.getName()).collect(Collectors.toSet());
 		schemaForUnknownType = this.typeSchemas.get("*");
 	}
 
-	public boolean validate(Collection<Definition> definitions) {
+	public boolean validate(Collection<TypeDefinition> definitions) {
 		definitions.forEach(d -> d.accept(this));
 		return violations.isEmpty();
 	}
@@ -42,7 +42,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 	@Override
 	protected VisitResult onVisit(Type type, String identifier) {
 		final String typeName = type.getName();
-		final Definition definition = context.getClosest(Definition.class);
+		final TypeDefinition definition = context.getClosest(TypeDefinition.class);
 
 		final Type typeSchema = getSchema(typeName);
 		if (typeSchema == null) {
@@ -64,16 +64,16 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		return typeSchema;
 	}
 
-	private void validateAbstractModifier(Definition definition, Type type, Type typeSchema) {
+	private void validateAbstractModifier(TypeDefinition definition, Type type, Type typeSchema) {
 		if (typeSchema.getAnnotation("abstract") != null) error(definition,
 				"cannot be defined of type '%s' because '%s' is abstract.", type.getName(), type.getName());
 	}
 
-	private void validateTypeAnnotations(final Definition definition, Type type, Type typeSchema) {
-		final Map<String, Definition> allowedAnnotations = getAllowedAnnotations(typeSchema);
+	private void validateTypeAnnotations(final TypeDefinition definition, Type type, Type typeSchema) {
+		final Map<String, TypeDefinition> allowedAnnotations = getAllowedAnnotations(typeSchema);
 		// validate that all required type annotations are present
 		final List<String> requiredAnnotations = allowedAnnotations.values().stream()
-				.filter(d -> d.getType().getAnnotation("required") != null).map(Definition::getName)
+				.filter(d -> d.getType().getAnnotation("required") != null).map(TypeDefinition::getName)
 				.collect(Collectors.toList());
 		final Set<String> actualAnnotations = type.getAnnotations().keySet();
 		for (final String requiredAnnotation : requiredAnnotations) {
@@ -84,7 +84,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 
 		// validate type annotations
 		for (final TypeAnnotation annotation : type.getAnnotations().values()) {
-			final Definition annotationSchema_def = allowedAnnotations.get(annotation.getName());
+			final TypeDefinition annotationSchema_def = allowedAnnotations.get(annotation.getName());
 			// validate that the annotation is allowed
 			if (annotationSchema_def == null) {
 				error(definition, "the annotation '%s' is not allowed", annotation.getName());
@@ -105,7 +105,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		}
 	}
 
-	private void validateTypeParamCount(final Definition definition, Type type, Type typeSchema) {
+	private void validateTypeParamCount(final TypeDefinition definition, Type type, Type typeSchema) {
 		final TypeAnnotation typeParamCount_a = typeSchema.getAnnotation("typeParamCount");
 		final TypeAnnotation minTypeParamCount_a = typeSchema.getAnnotation("minTypeParamCount");
 		final TypeAnnotation maxTypeParamCount_a = typeSchema.getAnnotation("maxTypeParamCount");
@@ -136,12 +136,12 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		}
 	}
 
-	private void validateCompositeAnnotation(final Definition definition, Type type, Type typeSchema) {
+	private void validateCompositeAnnotation(final TypeDefinition definition, Type type, Type typeSchema) {
 		final TypeAnnotation composite_a = typeSchema.getAnnotation("composite");
 		final boolean composite = composite_a != null;
 
 		// validate that !composite imply no sub-definitions
-		final boolean composite_actual = !type.getChildren().isEmpty();
+		final boolean composite_actual = !type.getSubDefinitions().isEmpty();
 		if (!composite && composite_actual) {
 			error(definition, "no subdefinitions expected");
 		}
@@ -150,7 +150,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 			// validate sub-definition allowed types
 			final List<String> allowedSubTypes = composite_a.getStringParams();
 			if (!allowedSubTypes.isEmpty()) {
-				for (final Definition d : type.getChildren()) {
+				for (final TypeDefinition d : type.getSubDefinitions()) {
 					if (!isSubstitute(d.getType().getName(), allowedSubTypes))
 						error(d, "type is %s, allowed types in this context are: %s", d.getType().getName(),
 								allowedSubTypes.stream().collect(Collectors.joining(", ")));
@@ -159,7 +159,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		}
 	}
 
-	private void error(Definition definition, String message, Object... args) {
+	private void error(TypeDefinition definition, String message, Object... args) {
 		violations.add("Line " + definition.getLocation().getLine() + ": " + definition.getName() + ": "
 				+ String.format(message, args));
 	}
@@ -195,8 +195,8 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		return supertype;
 	}
 
-	public Map<String, Definition> getAllowedAnnotations(Type typeSchema) {
-		final Map<String, Definition> res = new HashMap<>(typeSchema.getChildrenOfType("annotation"));
+	public Map<String, TypeDefinition> getAllowedAnnotations(Type typeSchema) {
+		final Map<String, TypeDefinition> res = new HashMap<>(typeSchema.getSubDefinitionsOfType("annotation"));
 		final String supertypeName = getSupertypeName(typeSchema);
 		final Type supertype = typeSchemas.get(supertypeName);
 		if (supertype != null) {
@@ -207,7 +207,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 
 	public Set<String> getAllowedModifiers(final Type parentSchema) {
 		if (parentSchema == null) return allowedGlobalModifiers;
-		final HashSet<String> res = new HashSet<>(parentSchema.getChildrenOfType("modifier").keySet());
+		final HashSet<String> res = new HashSet<>(parentSchema.getSubDefinitionsOfType("modifier").keySet());
 		final String supertypeName = getSupertypeName(parentSchema);
 		final Type supertype = typeSchemas.get(supertypeName);
 		if (supertype != null) {
@@ -216,7 +216,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		return res;
 	}
 
-	private void validateParamCount(Definition definition, TypeAnnotation annotation, int expectedParamCount) {
+	private void validateParamCount(TypeDefinition definition, TypeAnnotation annotation, int expectedParamCount) {
 		final int paramCount = annotation.getObjectParams().size();
 		if (paramCount != expectedParamCount) {
 			error(definition, "annotation %s: expected %s parameters, got %s", annotation.getName(),
@@ -224,7 +224,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		}
 	}
 
-	private void validateParamCount(Definition definition, TypeAnnotation annotation, int minParamCount,
+	private void validateParamCount(TypeDefinition definition, TypeAnnotation annotation, int minParamCount,
 			int maxParamCount) {
 		final int paramCount = annotation.getObjectParams().size();
 		if (paramCount < minParamCount || paramCount > maxParamCount) {
@@ -233,7 +233,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		}
 	}
 
-	private void validateParamType(Definition definition, TypeAnnotation annotation, Type expectedType) {
+	private void validateParamType(TypeDefinition definition, TypeAnnotation annotation, Type expectedType) {
 		if (expectedType.getName().equals("primitive")) {
 			// no op
 		} else if (expectedType.getName().equals("bool")) {
@@ -268,7 +268,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 	}
 
 	@Override
-	protected VisitResult onVisit(Definition definition, String identifier) {
+	protected VisitResult onVisit(TypeDefinition definition, String identifier) {
 		final Type parentType = context.getClosest(Type.class);
 		final Set<String> allowedModifiers;
 		Type parentSchema = null;

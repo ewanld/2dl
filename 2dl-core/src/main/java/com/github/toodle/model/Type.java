@@ -22,7 +22,7 @@ public class Type implements Visitable<ToodleVisitor> {
 	private static final String IDENTIFIER_SUB_DEFINITION = "SUB_DEFINITION";
 	private String name;
 	private final Map<String, TypeAnnotation> annotations = new HashMap<>();
-	private final List<Definition> children = new ArrayList<>();
+	private final List<TypeDefinition> subDefinitions = new ArrayList<>();
 	private final List<Type> typeParams = new ArrayList<>();
 	// the container type (in case of a type parameter or a subdefinition)
 	private final Type parent;
@@ -32,7 +32,7 @@ public class Type implements Visitable<ToodleVisitor> {
 		this.name = name;
 		this.parent = parent;
 		visitableChildren.add(annotations.values());
-		visitableChildren.add(children, IDENTIFIER_SUB_DEFINITION);
+		visitableChildren.add(subDefinitions, IDENTIFIER_SUB_DEFINITION);
 		visitableChildren.add(typeParams, IDENTIFIER_TYPE_PARAM);
 	}
 
@@ -56,18 +56,18 @@ public class Type implements Visitable<ToodleVisitor> {
 		this.name = category;
 	}
 
-	public Collection<Definition> getChildren() {
-		return children;
+	public Collection<TypeDefinition> getSubDefinitions() {
+		return subDefinitions;
 	}
 
-	public Map<String, Definition> getChildrenOfType(String typeName) {
-		return children.stream().filter(
+	public Map<String, TypeDefinition> getSubDefinitionsOfType(String typeName) {
+		return subDefinitions.stream().filter(
 				d -> Objects.equals(Optional.ofNullable(d.getType()).map(Type::getName).orElse(null), typeName))
-				.collect(Collectors.toMap(Definition::getName, Function.identity()));
+				.collect(Collectors.toMap(TypeDefinition::getName, Function.identity()));
 	}
 
-	public Definition getDefinition(String name) {
-		return children.stream().filter(d -> Objects.equals(d.getName(), name)).findAny().orElse(null);
+	public TypeDefinition getSubDefinition(String name) {
+		return subDefinitions.stream().filter(d -> Objects.equals(d.getName(), name)).findAny().orElse(null);
 	}
 
 	public Type getParent() {
@@ -99,7 +99,7 @@ public class Type implements Visitable<ToodleVisitor> {
 		if (!typeParams.isEmpty()) sb.append("<")
 				.append(typeParams.stream().map(Type::toString).collect(Collectors.joining(", "))).append(">");
 		annotations.values().forEach(a -> sb.append(" ").append(a.toString()));
-		if (!children.isEmpty()) sb.append(" { ... }");
+		if (!subDefinitions.isEmpty()) sb.append(" { ... }");
 		return sb.toString();
 	}
 }

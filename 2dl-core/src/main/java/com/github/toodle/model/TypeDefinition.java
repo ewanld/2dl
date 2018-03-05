@@ -12,14 +12,14 @@ import com.github.visitorj.VisitableList;
 
 import com.github.toodle.services.ToodleVisitor;
 
-public class Definition implements Visitable<ToodleVisitor> {
+public class TypeDefinition implements Visitable<ToodleVisitor> {
 	private String name;
 	private final Set<String> modifiers = new HashSet<>();
 	private Type type;
 	private final VisitableList<ToodleVisitor> visitableChildren = new VisitableList<>();
 	private SourceLocation location;
 
-	public Definition(String name, Collection<String> modifiers, Type type) {
+	public TypeDefinition(String name, Collection<String> modifiers, Type type) {
 		this.name = name;
 		this.type = type;
 		this.modifiers.addAll(modifiers);

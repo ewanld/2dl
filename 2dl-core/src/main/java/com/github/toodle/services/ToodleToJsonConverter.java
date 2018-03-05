@@ -3,7 +3,7 @@ package com.github.toodle.services;
 import java.util.Collection;
 import java.util.Map;
 
-import com.github.toodle.model.Definition;
+import com.github.toodle.model.TypeDefinition;
 import com.github.toodle.model.Type;
 import com.github.toodle.model.TypeAnnotation;
 import com.google.gson.JsonArray;
@@ -13,13 +13,13 @@ import com.google.gson.JsonPrimitive;
 
 public class ToodleToJsonConverter {
 
-	public JsonElement toJson(Collection<Definition> definitions) {
+	public JsonElement toJson(Collection<TypeDefinition> definitions) {
 		final JsonArray res = new JsonArray();
 		definitions.forEach(d -> res.add(toJson(d)));
 		return res;
 	}
 
-	public JsonElement toJson(Definition definition) {
+	public JsonElement toJson(TypeDefinition definition) {
 		final JsonObject res = new JsonObject();
 		res.add("name", new JsonPrimitive(definition.getName()));
 		if (!definition.getModifiers().isEmpty()) res.add("modifiers", stringsToJson(definition.getModifiers()));
@@ -31,7 +31,7 @@ public class ToodleToJsonConverter {
 		final JsonObject res = new JsonObject();
 		res.add("name", new JsonPrimitive(type.getName()));
 		if (!type.getTypeParams().isEmpty()) res.add("typeParams", typesToJson(type.getTypeParams()));
-		if (!type.getChildren().isEmpty()) res.add("subDefinitions", toJson(type.getChildren()));
+		if (!type.getSubDefinitions().isEmpty()) res.add("subDefinitions", toJson(type.getSubDefinitions()));
 		if (!type.getAnnotations().isEmpty()) res.add("annotations", annotationsToJson(type.getAnnotations()));
 		return res;
 	}
