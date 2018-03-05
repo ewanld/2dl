@@ -9,7 +9,17 @@ definitions
 	;
 
 statement
-	: definition
+	: definition | alias_definition | const_definition
+	;
+
+alias_definition
+	:
+	'alias' IDENT '=' type
+	;
+
+const_definition
+	:
+	'const' VARIABLE '=' annotationParam
 	;
 
 definition
@@ -28,7 +38,7 @@ annotation
 	;
 
 annotationParam
-	: NUMBER | string
+	: NUMBER | string | VARIABLE
 	;
 
 string
@@ -67,7 +77,11 @@ fragment HEX
 fragment EXP
    : [Ee] [+\-]? INT
    ;
-   
+
+VARIABLE
+	: '$' [a-zA-Z0-9_\-*]+
+	;
+	
 IDENT
 	: [a-zA-Z0-9_\-*]+
 	;

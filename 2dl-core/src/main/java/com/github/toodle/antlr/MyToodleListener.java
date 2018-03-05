@@ -14,8 +14,10 @@ import org.unbescape.java.JavaEscape;
 
 import com.github.toodle.ToodleLexer;
 import com.github.toodle.ToodleListener;
+import com.github.toodle.ToodleParser.Alias_definitionContext;
 import com.github.toodle.ToodleParser.AnnotationContext;
 import com.github.toodle.ToodleParser.AnnotationParamContext;
+import com.github.toodle.ToodleParser.Const_definitionContext;
 import com.github.toodle.ToodleParser.DefinitionContext;
 import com.github.toodle.ToodleParser.DefinitionsContext;
 import com.github.toodle.ToodleParser.StatementContext;
@@ -201,5 +203,27 @@ public class MyToodleListener implements ToodleListener {
 	public void exitStatement(StatementContext ctx) {
 		// no op
 
+	}
+
+	@Override
+	public void enterAlias_definition(Alias_definitionContext ctx) {
+
+	}
+
+	@Override
+	public void exitAlias_definition(Alias_definitionContext ctx) {
+		final String aliasName = ctx.getToken(ToodleLexer.IDENT, 0).getText();
+
+	}
+
+	@Override
+	public void enterConst_definition(Const_definitionContext ctx) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void exitConst_definition(Const_definitionContext ctx) {
+		// TODO Auto-generated method stub
 	}
 }
