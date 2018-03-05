@@ -23,6 +23,7 @@ public class Type implements Visitable<ToodleVisitor> {
 	private String name;
 	private final Map<String, TypeAnnotation> annotations = new HashMap<>();
 	private final List<TypeDefinition> subDefinitions = new ArrayList<>();
+	private final List<AliasDefinition> aliasDefinitions = new ArrayList<>();
 	private final List<Type> typeParams = new ArrayList<>();
 	// the container type (in case of a type parameter or a subdefinition)
 	private final Type parent;
@@ -101,5 +102,9 @@ public class Type implements Visitable<ToodleVisitor> {
 		annotations.values().forEach(a -> sb.append(" ").append(a.toString()));
 		if (!subDefinitions.isEmpty()) sb.append(" { ... }");
 		return sb.toString();
+	}
+
+	public List<AliasDefinition> getAliasDefinitions() {
+		return aliasDefinitions;
 	}
 }

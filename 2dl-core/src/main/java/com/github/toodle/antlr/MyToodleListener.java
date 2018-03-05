@@ -25,19 +25,20 @@ import com.github.toodle.ToodleParser.StringContext;
 import com.github.toodle.ToodleParser.TypeContext;
 import com.github.toodle.ToodleParser.TypeParamsContext;
 import com.github.toodle.model.TypeDefinition;
+import com.github.toodle.model.AliasDefinition;
 import com.github.toodle.model.SourceLocation;
 import com.github.toodle.model.Type;
 import com.github.toodle.model.TypeAnnotation;
 
 public class MyToodleListener implements ToodleListener {
 	public static final String ROOT_TYPE_NAME = "$root";
-	private final Type rootTypeDef = new Type(ROOT_TYPE_NAME, null);
-	private Type currentTypeDef = rootTypeDef;
+	private final Type rootType = new Type(ROOT_TYPE_NAME, null);
+	private Type currentType = rootType;
 	private TypeAnnotation currentConstraint;
 	private final Deque<Scope> scopes = new ArrayDeque<>();
 
 	public enum Scope {
-		DEFINITION, TYPE_PARAM
+		TYPE_DEFINITION, TYPE_PARAM, ALIAS_DEFINITION
 	}
 
 	@Override
@@ -78,11 +79,11 @@ public class MyToodleListener implements ToodleListener {
 
 		// definitions may or may not have a type
 		if (ctx.getChildCount() > 2) {
-			final Type parent = currentTypeDef.getParent();
-			final TypeDefinition definition = new TypeDefinition(name, modifiers, currentTypeDef);
+			final Type parent = currentType.getParent();
+			final TypeDefinition definition = new TypeDefinition(name, modifiers, currentType);
 			definition.setLocation(new SourceLocation("", ctx.start.getLine()));
 			parent.getSubDefinitions().add(definition);
-			currentTypeDef = parent;
+			currentType = parent;
 		}
 	}
 
@@ -122,7 +123,7 @@ public class MyToodleListener implements ToodleListener {
 
 	@Override
 	public void enterDefinitions(DefinitionsContext ctx) {
-		scopes.push(Scope.DEFINITION);
+		scopes.push(Scope.TYPE_DEFINITION);
 	}
 
 	@Override
@@ -132,29 +133,39 @@ public class MyToodleListener implements ToodleListener {
 
 	@Override
 	public void enterType(TypeContext ctx) {
-		final Type child = new Type(currentTypeDef);
+		final Type child = new Type(currentType);
 		switch (scopes.getFirst()) {
-		case DEFINITION:
+		case TYPE_DEFINITION:
 			// child is added to its parent later since we don't have the definition name here.
 			break;
+		case ALIAS_DEFINITION:
+			// no op
+			break;
 		case TYPE_PARAM:
-			currentTypeDef.getTypeParams().add(child);
+			currentType.getTypeParams().add(child);
+			break;
+		default:
 			break;
 		}
-		currentTypeDef = child;
+		currentType = child;
 	}
 
 	@Override
 	public void exitType(TypeContext ctx) {
 		final String category = ctx.getChild(0).getText();
-		currentTypeDef.setCategory(category);
+		currentType.setCategory(category);
 
 		switch (scopes.getFirst()) {
-		case DEFINITION:
+		case TYPE_DEFINITION:
+			// no op
+			break;
+		case ALIAS_DEFINITION:
 			// no op
 			break;
 		case TYPE_PARAM:
-			currentTypeDef = currentTypeDef.getParent();
+			currentType = currentType.getParent();
+			break;
+		default:
 			break;
 		}
 	}
@@ -168,7 +179,7 @@ public class MyToodleListener implements ToodleListener {
 	public void exitAnnotation(AnnotationContext ctx) {
 		final String name = ctx.getChild(0).getText();
 		currentConstraint.setName(name);
-		currentTypeDef.getAnnotations().put(name, currentConstraint);
+		currentType.getAnnotations().put(name, currentConstraint);
 	}
 
 	@Override
@@ -181,7 +192,7 @@ public class MyToodleListener implements ToodleListener {
 	}
 
 	public Type getRootType() {
-		return rootTypeDef;
+		return rootType;
 	}
 
 	@Override
@@ -207,13 +218,15 @@ public class MyToodleListener implements ToodleListener {
 
 	@Override
 	public void enterAlias_definition(Alias_definitionContext ctx) {
-
+		scopes.push(Scope.ALIAS_DEFINITION);
 	}
 
 	@Override
 	public void exitAlias_definition(Alias_definitionContext ctx) {
 		final String aliasName = ctx.getToken(ToodleLexer.IDENT, 0).getText();
-
+		final Type parent = currentType.getParent();
+		parent.getAliasDefinitions().add(new AliasDefinition(aliasName, currentType));
+		currentType = parent;
 	}
 
 	@Override
