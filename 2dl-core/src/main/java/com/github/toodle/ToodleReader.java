@@ -32,30 +32,30 @@ public class ToodleReader {
 	}
 
 	public Collection<TypeDefinition> read() throws IOException {
-		final Collection<TypeDefinition> definitions = readDefinitions(definitionsReader);
+		final Type rootType = read(definitionsReader);
 		if (schemaReader != null) {
-			final Collection<TypeDefinition> schemaDefinitions = readDefinitions(schemaReader);
+			final Type schemaRootType = read(schemaReader);
 
 			// validate schema against meta-schema
 			try (final InputStreamReader metaSchemaReader = new InputStreamReader(
 					ToodleReader.class.getClassLoader().getResourceAsStream("2dl-schema.2dl"), "UTF-8")) {
-				final Collection<TypeDefinition> metaSchemaDefinitions = readDefinitions(metaSchemaReader);
-				final ToodleSchema schemaValidator = new ToodleSchema(metaSchemaDefinitions);
-				if (!schemaValidator.validate(schemaDefinitions)) {
+				final Type metaSchemaRootType = read(metaSchemaReader);
+				final ToodleSchema schemaValidator = new ToodleSchema(metaSchemaRootType);
+				if (!schemaValidator.validate(schemaRootType)) {
 					throw new ToodleValidationException(schemaValidator.getViolations());
 				}
 
 				// validate definitions against schema
-				final ToodleSchema validator = new ToodleSchema(schemaDefinitions);
-				if (!validator.validate(definitions)) {
+				final ToodleSchema validator = new ToodleSchema(schemaRootType);
+				if (!validator.validate(rootType)) {
 					throw new ToodleValidationException(validator.getViolations());
 				}
 			}
 		}
-		return definitions;
+		return rootType.getSubDefinitions();
 	}
 
-	private static Collection<TypeDefinition> readDefinitions(Reader reader) throws IOException {
+	private static Type read(Reader reader) throws IOException {
 		final ToodleLexer lexer = new ToodleLexer(CharStreams.fromReader(reader));
 		// Get a list of matched tokens
 		final CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -66,7 +66,6 @@ public class ToodleReader {
 		final MyToodleListener listener = new MyToodleListener();
 		parser.addParseListener(listener);
 		parser.definitions();
-		final Type rootType = listener.getRootType();
-		return rootType.getSubDefinitions();
+		return listener.getRootType();
 	}
 }

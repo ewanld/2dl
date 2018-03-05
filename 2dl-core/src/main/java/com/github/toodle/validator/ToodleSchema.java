@@ -21,7 +21,8 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 	private final Set<String> allowedGlobalModifiers;
 	private final List<String> violations = new ArrayList<>();
 
-	public ToodleSchema(Collection<TypeDefinition> schemaDefinitions) {
+	public ToodleSchema(Type schemaRootType) {
+		final Collection<TypeDefinition> schemaDefinitions = schemaRootType.getSubDefinitions();
 		this.typeSchemas = schemaDefinitions.stream().filter(d -> d.getType().getName().equals("type"))
 				.collect(Collectors.toMap(TypeDefinition::getName, TypeDefinition::getType));
 		this.allowedGlobalModifiers = schemaDefinitions.stream().filter(d -> d.getType().getName().equals("modifier"))
@@ -29,7 +30,8 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 		schemaForUnknownType = this.typeSchemas.get("*");
 	}
 
-	public boolean validate(Collection<TypeDefinition> definitions) {
+	public boolean validate(Type rootType) {
+		final Collection<TypeDefinition> definitions = rootType.getSubDefinitions();
 		definitions.forEach(d -> d.accept(this));
 		return violations.isEmpty();
 	}
