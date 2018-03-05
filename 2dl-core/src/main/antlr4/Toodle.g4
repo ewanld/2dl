@@ -5,7 +5,11 @@ grammar Toodle;
 }
 
 definitions
-	: NL* definition? (NL+ definition)* NL*
+	: NL* statement? (NL+ statement)* NL*
+	;
+
+statement
+	: definition
 	;
 
 definition
@@ -23,8 +27,8 @@ annotation
 	: IDENT ('(' annotationParam (',' annotationParam)* ')')?
 	;
 
-annotationParam:
-	NUMBER | string
+annotationParam
+	: NUMBER | string
 	;
 
 string
