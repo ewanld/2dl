@@ -2,6 +2,7 @@ package com.github.toodle.model;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,10 @@ public class TypeAnnotation implements Visitable<ToodleVisitor> {
 	}
 
 	public List<Object> getObjectParams() {
+		return Collections.unmodifiableList(parameters);
+	}
+
+	public List<Object> getObjectParams_mutable() {
 		return parameters;
 	}
 
