@@ -23,7 +23,7 @@ public class Type implements Visitable<ToodleVisitor> {
 	private String name;
 	private final Map<String, TypeAnnotation> annotations = new HashMap<>();
 	private final List<TypeDefinition> subDefinitions = new ArrayList<>();
-	private final List<AliasDefinition> aliasDefinitions = new ArrayList<>();
+	private final Map<String, AliasDefinition> aliasDefinitions = new HashMap<>();
 	private final List<Type> typeParams = new ArrayList<>();
 	// the container type (in case of a type parameter or a subdefinition)
 	private final Type parent;
@@ -34,7 +34,7 @@ public class Type implements Visitable<ToodleVisitor> {
 		this.parent = parent;
 		visitableChildren.add(annotations.values());
 		visitableChildren.add(subDefinitions, IDENTIFIER_SUB_DEFINITION);
-		visitableChildren.add(typeParams, IDENTIFIER_TYPE_PARAM);
+		visitableChildren.add(new TypeParamCollection(typeParams), IDENTIFIER_TYPE_PARAM);
 	}
 
 	public Type(Type parent) {
@@ -45,16 +45,16 @@ public class Type implements Visitable<ToodleVisitor> {
 		return name;
 	}
 
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public Map<String, TypeAnnotation> getAnnotations() {
 		return annotations;
 	}
 
 	public TypeAnnotation getAnnotation(String annotationName) {
 		return annotations.get(annotationName);
-	}
-
-	public void setCategory(String category) {
-		this.name = category;
 	}
 
 	public Collection<TypeDefinition> getSubDefinitions() {
@@ -104,7 +104,15 @@ public class Type implements Visitable<ToodleVisitor> {
 		return sb.toString();
 	}
 
-	public List<AliasDefinition> getAliasDefinitions() {
+	public void addAlias(String name, Type value) {
+		aliasDefinitions.put(name, new AliasDefinition(name, value));
+	}
+
+	public Collection<AliasDefinition> getAliasDefinitions() {
+		return aliasDefinitions.values();
+	}
+
+	public Map<String, AliasDefinition> getAliasDefinitionMap() {
 		return aliasDefinitions;
 	}
 }

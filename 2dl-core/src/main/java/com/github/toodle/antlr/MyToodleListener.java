@@ -24,11 +24,10 @@ import com.github.toodle.ToodleParser.StatementContext;
 import com.github.toodle.ToodleParser.StringContext;
 import com.github.toodle.ToodleParser.TypeContext;
 import com.github.toodle.ToodleParser.TypeParamsContext;
-import com.github.toodle.model.TypeDefinition;
-import com.github.toodle.model.AliasDefinition;
 import com.github.toodle.model.SourceLocation;
 import com.github.toodle.model.Type;
 import com.github.toodle.model.TypeAnnotation;
+import com.github.toodle.model.TypeDefinition;
 
 public class MyToodleListener implements ToodleListener {
 	public static final String ROOT_TYPE_NAME = "$root";
@@ -152,8 +151,8 @@ public class MyToodleListener implements ToodleListener {
 
 	@Override
 	public void exitType(TypeContext ctx) {
-		final String category = ctx.getChild(0).getText();
-		currentType.setCategory(category);
+		final String name = ctx.getChild(0).getText();
+		currentType.setName(name);
 
 		switch (scopes.getFirst()) {
 		case TYPE_DEFINITION:
@@ -225,7 +224,7 @@ public class MyToodleListener implements ToodleListener {
 	public void exitAlias_definition(Alias_definitionContext ctx) {
 		final String aliasName = ctx.getToken(ToodleLexer.IDENT, 0).getText();
 		final Type parent = currentType.getParent();
-		parent.getAliasDefinitions().add(new AliasDefinition(aliasName, currentType));
+		parent.addAlias(aliasName, currentType);
 		currentType = parent;
 	}
 

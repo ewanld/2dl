@@ -125,4 +125,17 @@ public class TypeAnnotation implements Visitable<ToodleVisitor> {
 				.append(parameters.stream().map(Object::toString).collect(Collectors.joining(", "))).append(")");
 		return sb.toString();
 	}
+
+	public List<String> getParamsAsLiterals() {
+		final List<String> res = new ArrayList<>(parameters.size());
+		for (final Object o : parameters) {
+			if (o instanceof BigDecimal) {
+				res.add(((BigDecimal) o).toPlainString());
+			} else if (o instanceof String) {
+				// TODO escape
+				res.add("\"" + (String) o + "\"");
+			}
+		}
+		return res;
+	}
 }

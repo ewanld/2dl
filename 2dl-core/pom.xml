@@ -175,6 +175,7 @@
 							<classes>
 								<class>com.github.toodle.model.TypeDefinition</class>
 								<class>com.github.toodle.model.Type</class>
+								<class>com.github.toodle.model.TypeParamCollection</class>
 								<class>com.github.toodle.model.TypeAnnotation</class>
 							</classes>
 						</configuration>

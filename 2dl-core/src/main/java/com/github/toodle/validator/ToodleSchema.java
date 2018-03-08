@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.github.toodle.model.TypeDefinition;
+import com.github.toodle.model.TypeParamCollection;
 import com.github.toodle.model.Type;
 import com.github.toodle.model.TypeAnnotation;
 import com.github.toodle.services.ToodleVisitorWithContext;
@@ -292,6 +293,11 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 
 	public List<String> getViolations() {
 		return violations;
+	}
+
+	@Override
+	protected VisitResult onVisit(TypeParamCollection typeParamCollection, String identifier) {
+		return VisitResult.CONTINUE;
 	}
 
 }
