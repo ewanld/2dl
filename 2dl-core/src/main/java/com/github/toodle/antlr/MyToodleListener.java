@@ -16,7 +16,7 @@ import com.github.toodle.ToodleLexer;
 import com.github.toodle.ToodleListener;
 import com.github.toodle.ToodleParser.Alias_definitionContext;
 import com.github.toodle.ToodleParser.AnnotationContext;
-import com.github.toodle.ToodleParser.AnnotationParamContext;
+import com.github.toodle.ToodleParser.ExprContext;
 import com.github.toodle.ToodleParser.Const_definitionContext;
 import com.github.toodle.ToodleParser.DefinitionContext;
 import com.github.toodle.ToodleParser.DefinitionsContext;
@@ -102,7 +102,7 @@ public class MyToodleListener implements ToodleListener {
 			}
 			return s;
 
-		} else if (ctx instanceof AnnotationParamContext) {
+		} else if (ctx instanceof ExprContext) {
 			final ParserRuleContext ctx_expr = (ParserRuleContext) ctx;
 			final Object child = fromContext(ctx_expr.getChild(0));
 			return child;
@@ -182,12 +182,12 @@ public class MyToodleListener implements ToodleListener {
 	}
 
 	@Override
-	public void enterAnnotationParam(AnnotationParamContext ctx) {
+	public void enterExpr(ExprContext ctx) {
 	}
 
 	@Override
-	public void exitAnnotationParam(AnnotationParamContext ctx) {
-		currentConstraint.getObjectParams().add(fromContext(ctx));
+	public void exitExpr(ExprContext ctx) {
+		currentConstraint.getObjectParams_mutable().add(fromContext(ctx));
 	}
 
 	public Type getRootType() {

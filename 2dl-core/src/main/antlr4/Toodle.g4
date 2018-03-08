@@ -19,7 +19,7 @@ alias_definition
 
 const_definition
 	:
-	'const' VARIABLE '=' annotationParam
+	'const' VARIABLE '=' expr
 	;
 
 definition
@@ -34,10 +34,10 @@ typeParams
 	: type (',' type)*;
 	
 annotation
-	: IDENT ('(' annotationParam (',' annotationParam)* ')')?
+	: IDENT ('(' expr (',' expr)* ')')?
 	;
 
-annotationParam
+expr
 	: NUMBER | string | VARIABLE
 	;
 
