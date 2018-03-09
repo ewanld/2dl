@@ -3,15 +3,14 @@ package com.github.toodle.model;
 import java.util.Collection;
 
 import com.github.toodle.services.ToodleVisitor;
+import com.github.visitorj.CompositeVisitable;
 import com.github.visitorj.VisitEvent;
 import com.github.visitorj.VisitResult;
-import com.github.visitorj.VisitableList;
-import com.github.visitorj.CompositeVisitable;
 
 public class TypeParamCollection extends CompositeVisitable<ToodleVisitor> {
 
 	public TypeParamCollection(Collection<Type> typeParams) {
-		super(new VisitableList<>(typeParams));
+		super(typeParams);
 	}
 
 	@Override

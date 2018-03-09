@@ -27,14 +27,10 @@ public class Type implements Visitable<ToodleVisitor> {
 	private final List<Type> typeParams = new ArrayList<>();
 	// the container type (in case of a type parameter or a subdefinition)
 	private final Type parent;
-	private final VisitableList<ToodleVisitor> visitableChildren = new VisitableList<>();
 
 	public Type(String name, Type parent) {
 		this.name = name;
 		this.parent = parent;
-		visitableChildren.add(annotations.values());
-		visitableChildren.add(subDefinitions, IDENTIFIER_SUB_DEFINITION);
-		visitableChildren.add(new TypeParamCollection(typeParams), IDENTIFIER_TYPE_PARAM);
 	}
 
 	public Type(Type parent) {
@@ -87,6 +83,10 @@ public class Type implements Visitable<ToodleVisitor> {
 
 	@Override
 	public Iterable<IdentifiedVisitable<ToodleVisitor>> getVisitableChildren() {
+		final VisitableList<ToodleVisitor> visitableChildren = new VisitableList<>();
+		visitableChildren.add(annotations.values());
+		visitableChildren.add(subDefinitions, IDENTIFIER_SUB_DEFINITION);
+		if (!typeParams.isEmpty()) visitableChildren.add(new TypeParamCollection(typeParams), IDENTIFIER_TYPE_PARAM);
 		return visitableChildren;
 	}
 
