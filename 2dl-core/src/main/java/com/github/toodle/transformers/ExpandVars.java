@@ -2,31 +2,31 @@ package com.github.toodle.transformers;
 
 import java.util.Map;
 
-import com.github.toodle.model.ConstDefinition;
+import com.github.toodle.model.VarDefinition;
 import com.github.toodle.model.Expr;
 import com.github.toodle.model.Type;
 import com.github.toodle.model.TypeAnnotation;
 import com.github.toodle.model.TypeDefinition;
 
-public class ExpandConstants {
+public class ExpandVars {
 	public void execute(Type rootType) {
-		expandConstants(rootType, rootType);
+		expandVars(rootType, rootType);
 	}
 
-	private void expandConstants(Type type, Type scope) {
+	private void expandVars(Type type, Type scope) {
 		// process the current type
 		for (final TypeAnnotation ta : type.getAnnotations().values()) {
-			expandConstants(ta, scope);
+			expandVars(ta, scope);
 		}
 
 		// recursively process type parameters
-		type.getTypeParams().forEach(t -> expandConstants(t, scope));
+		type.getTypeParams().forEach(t -> expandVars(t, scope));
 
 		// recursively process sub-definitions
-		type.getSubDefinitions().stream().map(TypeDefinition::getType).forEach(t -> expandConstants(t, type));
+		type.getSubDefinitions().stream().map(TypeDefinition::getType).forEach(t -> expandVars(t, type));
 	}
 
-	private void expandConstants(TypeAnnotation typeAnnotation, Type scope) {
+	private void expandVars(TypeAnnotation typeAnnotation, Type scope) {
 		for (int i = 0; i < typeAnnotation.getExprParams().size(); i++) {
 			Expr param = typeAnnotation.getExprParams().get(i);
 			while (param.isVar()) {
@@ -45,8 +45,8 @@ public class ExpandConstants {
 	 * Return the alias with the specified name, or {@code null} if no such alias exists.
 	 */
 	private Expr getConstant(String constantName, Type scope) {
-		final Map<String, ConstDefinition> constants = scope.getConstDefinitionMap();
-		final ConstDefinition constant = constants.get(constantName);
+		final Map<String, VarDefinition> constants = scope.getConstDefinitionMap();
+		final VarDefinition constant = constants.get(constantName);
 		if (constant != null) return constant.getValue();
 		if (scope.getParent() == null) return null;
 		return getConstant(constantName, scope.getParent());

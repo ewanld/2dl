@@ -25,7 +25,7 @@ public class Type implements Visitable<ToodleVisitor> {
 	private final Map<String, TypeAnnotation> annotations = new HashMap<>();
 	private final List<TypeDefinition> subDefinitions = new ArrayList<>();
 	private final Map<String, AliasDefinition> aliasDefinitions = new HashMap<>();
-	private final Map<String, ConstDefinition> constDefinitions = new HashMap<>();
+	private final Map<String, VarDefinition> constDefinitions = new HashMap<>();
 	private final List<Type> typeParams = new ArrayList<>();
 	// the container type (in case of a type parameter or a subdefinition)
 	private final Type parent;
@@ -130,14 +130,14 @@ public class Type implements Visitable<ToodleVisitor> {
 	}
 
 	public void addConstDefinition(String constName, Expr currentConstValue) {
-		constDefinitions.put(constName, new ConstDefinition(constName, currentConstValue));
+		constDefinitions.put(constName, new VarDefinition(constName, currentConstValue));
 	}
 
-	public Map<String, ConstDefinition> getConstDefinitionMap() {
+	public Map<String, VarDefinition> getConstDefinitionMap() {
 		return constDefinitions;
 	}
 
-	public Collection<ConstDefinition> getConstDefinitions() {
+	public Collection<VarDefinition> getConstDefinitions() {
 		return constDefinitions.values();
 	}
 

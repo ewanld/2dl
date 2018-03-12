@@ -1,10 +1,10 @@
 package com.github.toodle.model;
 
-public class ConstDefinition {
+public class VarDefinition {
 	private final String name;
 	private final Expr value;
 
-	public ConstDefinition(String name, Expr value) {
+	public VarDefinition(String name, Expr value) {
 		this.name = name;
 		this.value = value;
 	}

@@ -5,7 +5,7 @@ import java.io.Writer;
 import java.util.stream.Collectors;
 
 import com.github.toodle.model.AliasDefinition;
-import com.github.toodle.model.ConstDefinition;
+import com.github.toodle.model.VarDefinition;
 import com.github.toodle.model.Type;
 import com.github.toodle.model.TypeAnnotation;
 import com.github.toodle.model.TypeDefinition;
@@ -62,7 +62,7 @@ public class ToodleWriter {
 		writeln();
 	}
 
-	private void writeConstDefinition(ConstDefinition cst) {
+	private void writeConstDefinition(VarDefinition cst) {
 		writeIndent();
 		write("const %s = %s", cst.getName(), cst.getValue().toLiteral());
 		writeln();
