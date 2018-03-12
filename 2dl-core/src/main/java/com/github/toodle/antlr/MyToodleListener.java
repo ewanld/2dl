@@ -16,28 +16,32 @@ import com.github.toodle.ToodleLexer;
 import com.github.toodle.ToodleListener;
 import com.github.toodle.ToodleParser.Alias_definitionContext;
 import com.github.toodle.ToodleParser.AnnotationContext;
-import com.github.toodle.ToodleParser.ExprContext;
 import com.github.toodle.ToodleParser.Const_definitionContext;
 import com.github.toodle.ToodleParser.DefinitionContext;
 import com.github.toodle.ToodleParser.DefinitionsContext;
+import com.github.toodle.ToodleParser.ExprContext;
 import com.github.toodle.ToodleParser.StatementContext;
 import com.github.toodle.ToodleParser.StringContext;
 import com.github.toodle.ToodleParser.TypeContext;
 import com.github.toodle.ToodleParser.TypeParamsContext;
+import com.github.toodle.model.Expr;
 import com.github.toodle.model.SourceLocation;
 import com.github.toodle.model.Type;
 import com.github.toodle.model.TypeAnnotation;
 import com.github.toodle.model.TypeDefinition;
+import com.github.toodle.model.Var;
 
 public class MyToodleListener implements ToodleListener {
 	public static final String ROOT_TYPE_NAME = "$root";
 	private final Type rootType = new Type(ROOT_TYPE_NAME, null);
 	private Type currentType = rootType;
-	private TypeAnnotation currentConstraint;
+	private TypeAnnotation currentTypeAnnotation;
+	private Expr currentConstValue;
 	private final Deque<Scope> scopes = new ArrayDeque<>();
+	private static final String variablePrefix = "$";
 
 	public enum Scope {
-		TYPE_DEFINITION, TYPE_PARAM, ALIAS_DEFINITION
+		TYPE_DEFINITION, TYPE_PARAM, ALIAS_DEFINITION, CONST_DEFINITION
 	}
 
 	@Override
@@ -79,6 +83,10 @@ public class MyToodleListener implements ToodleListener {
 		// definitions may or may not have a type
 		if (ctx.getChildCount() > 2) {
 			final Type parent = currentType.getParent();
+			if (parent == null) {
+				System.out.println("null");
+			}
+
 			final TypeDefinition definition = new TypeDefinition(name, modifiers, currentType);
 			definition.setLocation(new SourceLocation("", ctx.start.getLine()));
 			parent.getSubDefinitions().add(definition);
@@ -86,7 +94,7 @@ public class MyToodleListener implements ToodleListener {
 		}
 	}
 
-	private Object fromContext(Object ctx) {
+	private Expr ctxToExpr(Object ctx) {
 		final Pattern trimMultilineString = Pattern.compile("^[ \t]+\\|", Pattern.MULTILINE);
 		if (ctx instanceof StringContext) {
 			final StringContext child_ctx = (StringContext) ctx;
@@ -100,22 +108,27 @@ public class MyToodleListener implements ToodleListener {
 			} else if (s.startsWith("\"")) {
 				s = JavaEscape.unescapeJava(s.substring(1, s.length() - 1));
 			}
-			return s;
+			return new Expr(s);
 
 		} else if (ctx instanceof ExprContext) {
 			final ParserRuleContext ctx_expr = (ParserRuleContext) ctx;
-			final Object child = fromContext(ctx_expr.getChild(0));
+			final Expr child = ctxToExpr(ctx_expr.getChild(0));
 			return child;
 
 		} else if (ctx instanceof TerminalNode) {
 			final TerminalNode terminalNode = (TerminalNode) ctx;
-			if (terminalNode.getSymbol().getType() == ToodleLexer.NUMBER) {
-				return new BigDecimal(terminalNode.getText());
+			final int terminalType = terminalNode.getSymbol().getType();
+			if (terminalType == ToodleLexer.NUMBER) {
+				return new Expr(new BigDecimal(terminalNode.getText()));
+			} else if (terminalType == ToodleLexer.VARIABLE) {
+				return new Expr(new Var(terminalNode.getText().substring(variablePrefix.length())));
 			} else {
 				throw new RuntimeException("Unexpected token type: " + terminalNode.getSymbol().getType());
 
 			}
-		} else {
+		} else
+
+		{
 			throw new RuntimeException("Unknown type: " + ctx.getClass());
 		}
 	}
@@ -127,24 +140,15 @@ public class MyToodleListener implements ToodleListener {
 
 	@Override
 	public void exitDefinitions(DefinitionsContext ctx) {
-		scopes.pop();
+		final Scope popped = scopes.pop();
+		assert popped == Scope.TYPE_DEFINITION;
 	}
 
 	@Override
 	public void enterType(TypeContext ctx) {
 		final Type child = new Type(currentType);
-		switch (scopes.getFirst()) {
-		case TYPE_DEFINITION:
-			// child is added to its parent later since we don't have the definition name here.
-			break;
-		case ALIAS_DEFINITION:
-			// no op
-			break;
-		case TYPE_PARAM:
+		if (scopes.peek() == Scope.TYPE_PARAM) {
 			currentType.getTypeParams().add(child);
-			break;
-		default:
-			break;
 		}
 		currentType = child;
 	}
@@ -154,31 +158,21 @@ public class MyToodleListener implements ToodleListener {
 		final String name = ctx.getChild(0).getText();
 		currentType.setName(name);
 
-		switch (scopes.getFirst()) {
-		case TYPE_DEFINITION:
-			// no op
-			break;
-		case ALIAS_DEFINITION:
-			// no op
-			break;
-		case TYPE_PARAM:
+		if (scopes.peek() == Scope.TYPE_PARAM) {
 			currentType = currentType.getParent();
-			break;
-		default:
-			break;
 		}
 	}
 
 	@Override
 	public void enterAnnotation(AnnotationContext ctx) {
-		currentConstraint = new TypeAnnotation();
+		currentTypeAnnotation = new TypeAnnotation();
 	}
 
 	@Override
 	public void exitAnnotation(AnnotationContext ctx) {
 		final String name = ctx.getChild(0).getText();
-		currentConstraint.setName(name);
-		currentType.getAnnotations().put(name, currentConstraint);
+		currentTypeAnnotation.setName(name);
+		currentType.getAnnotations().put(name, currentTypeAnnotation);
 	}
 
 	@Override
@@ -187,7 +181,11 @@ public class MyToodleListener implements ToodleListener {
 
 	@Override
 	public void exitExpr(ExprContext ctx) {
-		currentConstraint.getObjectParams_mutable().add(fromContext(ctx));
+		if (scopes.peek() == Scope.CONST_DEFINITION) {
+			currentConstValue = ctxToExpr(ctx);
+		} else {
+			currentTypeAnnotation.getExprParams_mutable().add(ctxToExpr(ctx));
+		}
 	}
 
 	public Type getRootType() {
@@ -201,7 +199,8 @@ public class MyToodleListener implements ToodleListener {
 
 	@Override
 	public void exitTypeParams(TypeParamsContext ctx) {
-		scopes.pop();
+		final Scope popped = scopes.pop();
+		assert popped == Scope.TYPE_PARAM;
 	}
 
 	@Override
@@ -224,18 +223,26 @@ public class MyToodleListener implements ToodleListener {
 	public void exitAlias_definition(Alias_definitionContext ctx) {
 		final String aliasName = ctx.getToken(ToodleLexer.IDENT, 0).getText();
 		final Type parent = currentType.getParent();
-		parent.addAlias(aliasName, currentType);
+		parent.addAliasDefinition(aliasName, currentType);
 		currentType = parent;
+		final Scope popped = scopes.pop();
+		assert popped == Scope.ALIAS_DEFINITION;
 	}
 
 	@Override
 	public void enterConst_definition(Const_definitionContext ctx) {
-		// TODO Auto-generated method stub
-
+		scopes.push(Scope.CONST_DEFINITION);
+		// no op
 	}
 
 	@Override
 	public void exitConst_definition(Const_definitionContext ctx) {
-		// TODO Auto-generated method stub
+		final Scope popped = scopes.pop();
+		assert popped == Scope.CONST_DEFINITION;
+
+		final String name = ctx.getToken(ToodleLexer.VARIABLE, 0).getText().substring(variablePrefix.length());
+
+		currentType.addConstDefinition(name, currentConstValue);
+
 	}
 }

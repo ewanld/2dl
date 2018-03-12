@@ -1,5 +1,6 @@
 package com.github.toodle.model;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ public class Type implements Visitable<ToodleVisitor> {
 	private final Map<String, TypeAnnotation> annotations = new HashMap<>();
 	private final List<TypeDefinition> subDefinitions = new ArrayList<>();
 	private final Map<String, AliasDefinition> aliasDefinitions = new HashMap<>();
+	private final Map<String, ConstDefinition> constDefinitions = new HashMap<>();
 	private final List<Type> typeParams = new ArrayList<>();
 	// the container type (in case of a type parameter or a subdefinition)
 	private final Type parent;
@@ -35,6 +37,17 @@ public class Type implements Visitable<ToodleVisitor> {
 
 	public Type(Type parent) {
 		this(null, parent);
+	}
+
+	public static String exprToLiteral(final Object o) {
+		if (o instanceof BigDecimal) {
+			return ((BigDecimal) o).toPlainString();
+		} else if (o instanceof String) {
+			// TODO escape
+			return "\"" + (String) o + "\"";
+		} else {
+			throw new IllegalArgumentException("Unknown type: " + o.getClass());
+		}
 	}
 
 	public String getName() {
@@ -104,7 +117,7 @@ public class Type implements Visitable<ToodleVisitor> {
 		return sb.toString();
 	}
 
-	public void addAlias(String name, Type value) {
+	public void addAliasDefinition(String name, Type value) {
 		aliasDefinitions.put(name, new AliasDefinition(name, value));
 	}
 
@@ -114,5 +127,21 @@ public class Type implements Visitable<ToodleVisitor> {
 
 	public Map<String, AliasDefinition> getAliasDefinitionMap() {
 		return aliasDefinitions;
+	}
+
+	public void addConstDefinition(String constName, Expr currentConstValue) {
+		constDefinitions.put(constName, new ConstDefinition(constName, currentConstValue));
+	}
+
+	public Map<String, ConstDefinition> getConstDefinitionMap() {
+		return constDefinitions;
+	}
+
+	public Collection<ConstDefinition> getConstDefinitions() {
+		return constDefinitions.values();
+	}
+
+	public Object getConstValue(String constName) {
+		return constDefinitions.get(constName);
 	}
 }

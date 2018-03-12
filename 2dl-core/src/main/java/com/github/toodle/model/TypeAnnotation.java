@@ -6,15 +6,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.toodle.services.ToodleVisitor;
 import com.github.visitorj.VisitEvent;
 import com.github.visitorj.VisitResult;
 import com.github.visitorj.Visitable;
 
-import com.github.toodle.services.ToodleVisitor;
-
 public class TypeAnnotation implements Visitable<ToodleVisitor> {
 	private String name;
-	private final List<Object> parameters = new ArrayList<>();
+	private final List<Expr> parameters = new ArrayList<>();
 
 	public String getName() {
 		return name;
@@ -25,92 +24,35 @@ public class TypeAnnotation implements Visitable<ToodleVisitor> {
 	}
 
 	public List<Object> getObjectParams() {
+		return parameters.stream().map(Expr::getAsObject).collect(Collectors.toList());
+	}
+
+	public List<Expr> getExprParams() {
 		return Collections.unmodifiableList(parameters);
 	}
 
-	public List<Object> getObjectParams_mutable() {
+	public List<Expr> getExprParams_mutable() {
 		return parameters;
 	}
 
 	public List<String> getStringParams() {
-		final List<String> res = new ArrayList<>(parameters.size());
-		for (final Object p : parameters) {
-			if (p instanceof String) {
-				res.add(((String) p));
-			} else {
-				throw new RuntimeException(
-						String.format("getStringParams() failed because one parameter is a %s! Parameters are: %s",
-								p.getClass().getSimpleName(), parameters));
-			}
-		}
-		return res;
+		return parameters.stream().map(Expr::getAsString).collect(Collectors.toList());
 	}
 
 	public List<Integer> getIntParams() {
-		final List<Integer> res = new ArrayList<>(parameters.size());
-		for (final Object p : parameters) {
-			if (p instanceof BigDecimal) {
-				res.add(((BigDecimal) p).intValueExact());
-			} else {
-				throw new RuntimeException(
-						String.format("getIntParams() failed because one parameter is a %s! Parameters are: %s",
-								p.getClass().getSimpleName(), parameters));
-			}
-		}
-		return res;
+		return parameters.stream().map(Expr::getAsInt).collect(Collectors.toList());
 	}
 
 	public List<Long> getLongParams() {
-		final List<Long> res = new ArrayList<>(parameters.size());
-		for (final Object p : parameters) {
-			if (p instanceof BigDecimal) {
-				res.add(((BigDecimal) p).longValueExact());
-			} else {
-				throw new RuntimeException(
-						String.format("getLongParams() failed because one parameter is a %s! Parameters are: %s",
-								p.getClass().getSimpleName(), parameters));
-			}
-		}
-		return res;
+		return parameters.stream().map(Expr::getAsLong).collect(Collectors.toList());
 	}
 
 	public List<BigDecimal> getBigDecimalParams() {
-		final List<BigDecimal> res = new ArrayList<>(parameters.size());
-		for (final Object p : parameters) {
-			if (p instanceof BigDecimal) {
-				res.add((BigDecimal) p);
-
-			} else {
-				throw new RuntimeException(String.format(
-						"getBigDecimalParams() failed because one parameter is a %s! Parameters are: %s",
-						p.getClass().getSimpleName(), parameters));
-			}
-		}
-		return res;
+		return parameters.stream().map(Expr::getAsBigDecimal).collect(Collectors.toList());
 	}
 
 	public List<Boolean> getBooleanParams() {
-		final List<Boolean> res = new ArrayList<>(parameters.size());
-		for (final Object p : parameters) {
-			if (p instanceof String) {
-				res.add(parseBoolean((String) p));
-			} else {
-				throw new RuntimeException(
-						String.format("getBooleanParams() failed because one parameter is a %s! Parameters are: %s",
-								p.getClass().getSimpleName(), parameters));
-			}
-		}
-		return res;
-	}
-
-	public Boolean parseBoolean(String value) {
-		if (value.equals("true")) {
-			return true;
-		} else if (value.equals("false")) {
-			return false;
-		} else {
-			throw new RuntimeException(String.format("Value '%s' cannot be cast to Boolean! ", value));
-		}
+		return parameters.stream().map(Expr::getAsBoolean).collect(Collectors.toList());
 	}
 
 	@Override
@@ -126,21 +68,14 @@ public class TypeAnnotation implements Visitable<ToodleVisitor> {
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder(name);
-		if (!parameters.isEmpty()) sb.append("(")
-				.append(parameters.stream().map(Object::toString).collect(Collectors.joining(", "))).append(")");
+		if (!parameters.isEmpty()) sb.append("(").append(
+				parameters.stream().map(Expr::getAsObject).map(Object::toString).collect(Collectors.joining(", ")))
+				.append(")");
 		return sb.toString();
 	}
 
 	public List<String> getParamsAsLiterals() {
-		final List<String> res = new ArrayList<>(parameters.size());
-		for (final Object o : parameters) {
-			if (o instanceof BigDecimal) {
-				res.add(((BigDecimal) o).toPlainString());
-			} else if (o instanceof String) {
-				// TODO escape
-				res.add("\"" + (String) o + "\"");
-			}
-		}
-		return res;
+		return parameters.stream().map(Expr::toLiteral).collect(Collectors.toList());
 	}
+
 }

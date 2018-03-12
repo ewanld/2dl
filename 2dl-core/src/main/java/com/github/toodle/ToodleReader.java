@@ -9,6 +9,8 @@ import org.antlr.v4.runtime.CommonTokenStream;
 
 import com.github.toodle.antlr.MyToodleListener;
 import com.github.toodle.model.Type;
+import com.github.toodle.transformers.ExpandAliases;
+import com.github.toodle.transformers.ExpandConstants;
 import com.github.toodle.validator.ToodleSchema;
 import com.github.toodle.validator.ToodleValidationException;
 
@@ -64,6 +66,9 @@ public class ToodleReader {
 		final MyToodleListener listener = new MyToodleListener();
 		parser.addParseListener(listener);
 		parser.definitions();
-		return listener.getRootType();
+		final Type rootType = listener.getRootType();
+		new ExpandConstants().execute(rootType);
+		new ExpandAliases().execute(rootType);
+		return rootType;
 	}
 }

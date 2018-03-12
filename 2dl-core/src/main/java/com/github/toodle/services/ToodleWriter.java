@@ -5,6 +5,7 @@ import java.io.Writer;
 import java.util.stream.Collectors;
 
 import com.github.toodle.model.AliasDefinition;
+import com.github.toodle.model.ConstDefinition;
 import com.github.toodle.model.Type;
 import com.github.toodle.model.TypeAnnotation;
 import com.github.toodle.model.TypeDefinition;
@@ -61,6 +62,12 @@ public class ToodleWriter {
 		writeln();
 	}
 
+	private void writeConstDefinition(ConstDefinition cst) {
+		writeIndent();
+		write("const %s = %s", cst.getName(), cst.getValue().toLiteral());
+		writeln();
+	}
+
 	private void writeType(Type type) {
 		write(type.getName());
 
@@ -86,8 +93,11 @@ public class ToodleWriter {
 	}
 
 	private void writeType_inner(Type type) {
-		//write aliases
+		//write alias definitions
 		type.getAliasDefinitions().forEach(this::writeAlias);
+
+		//write const definitions
+		type.getConstDefinitions().forEach(this::writeConstDefinition);
 
 		// write sub-definitions
 		type.getSubDefinitions().forEach(this::writeDefinition);
