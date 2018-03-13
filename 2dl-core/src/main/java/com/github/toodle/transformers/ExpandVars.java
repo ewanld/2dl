@@ -44,9 +44,9 @@ public class ExpandVars {
 	 * Return the alias with the specified name, or {@code null} if no such alias exists.
 	 */
 	private Expr getVar(String varName, Type scope) {
-		final Map<String, VarDefinition> constants = scope.getVarDefinitionMap();
-		final VarDefinition constant = constants.get(varName);
-		if (constant != null) return constant.getValue();
+		final Map<String, VarDefinition> vars = scope.getVarDefinitionMap();
+		final VarDefinition var = vars.get(varName);
+		if (var != null) return var.getValue();
 		if (scope.getParent() == null) return null;
 		return getVar(varName, scope.getParent());
 	}

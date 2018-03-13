@@ -38,7 +38,7 @@ public class ToodleSchema extends ToodleVisitorWithContext {
 	}
 
 	@Override
-	protected VisitResult onVisit(TypeAnnotation constraint, String identifier) {
+	protected VisitResult onVisit(TypeAnnotation typeAnnotation, String identifier) {
 		return VisitResult.CONTINUE;
 	}
 
