@@ -23,6 +23,7 @@ import com.github.toodle.ToodleParser.ExprContext;
 import com.github.toodle.ToodleParser.StatementContext;
 import com.github.toodle.ToodleParser.StringContext;
 import com.github.toodle.ToodleParser.TypeContext;
+import com.github.toodle.ToodleParser.TypeParamContext;
 import com.github.toodle.ToodleParser.TypeParamsContext;
 import com.github.toodle.model.Expr;
 import com.github.toodle.model.SourceLocation;
@@ -244,5 +245,15 @@ public class MyToodleListener implements ToodleListener {
 
 		currentType.addVarDefinition(name, currentVarValue);
 
+	}
+
+	@Override
+	public void enterTypeParam(TypeParamContext ctx) {
+		// no op
+	}
+
+	@Override
+	public void exitTypeParam(TypeParamContext ctx) {
+		// no op
 	}
 }

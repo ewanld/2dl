@@ -31,7 +31,12 @@ type
 	;
 
 typeParams
-	: type (',' type)*;
+	: typeParam (',' typeParam)*
+	;
+
+typeParam
+	: type
+	;
 	
 annotation
 	: IDENT ('(' expr (',' expr)* ')')?
