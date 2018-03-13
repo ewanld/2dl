@@ -30,25 +30,24 @@ public class ExpandVars {
 		for (int i = 0; i < typeAnnotation.getExprParams().size(); i++) {
 			Expr param = typeAnnotation.getExprParams().get(i);
 			while (param.isVar()) {
-				final Expr expanded = getConstant(param.getAsVar().getName(), scope);
+				final Expr expanded = getVar(param.getAsVar().getName(), scope);
 				if (expanded == null) {
 					throw new RuntimeException("Unknown constant: " + param.toLiteral());
 				}
 				param = expanded;
 			}
 			typeAnnotation.getExprParams_mutable().set(i, param);
-			// getConstant()
 		}
 	}
 
 	/**
 	 * Return the alias with the specified name, or {@code null} if no such alias exists.
 	 */
-	private Expr getConstant(String constantName, Type scope) {
-		final Map<String, VarDefinition> constants = scope.getConstDefinitionMap();
-		final VarDefinition constant = constants.get(constantName);
+	private Expr getVar(String varName, Type scope) {
+		final Map<String, VarDefinition> constants = scope.getVarDefinitionMap();
+		final VarDefinition constant = constants.get(varName);
 		if (constant != null) return constant.getValue();
 		if (scope.getParent() == null) return null;
-		return getConstant(constantName, scope.getParent());
+		return getVar(varName, scope.getParent());
 	}
 }

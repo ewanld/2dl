@@ -62,9 +62,9 @@ public class ToodleWriter {
 		writeln();
 	}
 
-	private void writeConstDefinition(VarDefinition cst) {
+	private void writeVarDefinition(VarDefinition var) {
 		writeIndent();
-		write("const %s = %s", cst.getName(), cst.getValue().toLiteral());
+		write("const %s = %s", var.getName(), var.getValue().toLiteral());
 		writeln();
 	}
 
@@ -96,8 +96,8 @@ public class ToodleWriter {
 		//write alias definitions
 		type.getAliasDefinitions().forEach(this::writeAlias);
 
-		//write const definitions
-		type.getConstDefinitions().forEach(this::writeConstDefinition);
+		//write var definitions
+		type.getVarDefinitions().forEach(this::writeVarDefinition);
 
 		// write sub-definitions
 		type.getSubDefinitions().forEach(this::writeDefinition);

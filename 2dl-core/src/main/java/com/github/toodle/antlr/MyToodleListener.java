@@ -36,12 +36,12 @@ public class MyToodleListener implements ToodleListener {
 	private final Type rootType = new Type(ROOT_TYPE_NAME, null);
 	private Type currentType = rootType;
 	private TypeAnnotation currentTypeAnnotation;
-	private Expr currentConstValue;
+	private Expr currentVarValue;
 	private final Deque<Scope> scopes = new ArrayDeque<>();
 	private static final String variablePrefix = "$";
 
 	public enum Scope {
-		TYPE_DEFINITION, TYPE_PARAM, ALIAS_DEFINITION, CONST_DEFINITION
+		TYPE_DEFINITION, TYPE_PARAM, ALIAS_DEFINITION, VAR_DEFINITION
 	}
 
 	@Override
@@ -181,8 +181,8 @@ public class MyToodleListener implements ToodleListener {
 
 	@Override
 	public void exitExpr(ExprContext ctx) {
-		if (scopes.peek() == Scope.CONST_DEFINITION) {
-			currentConstValue = ctxToExpr(ctx);
+		if (scopes.peek() == Scope.VAR_DEFINITION) {
+			currentVarValue = ctxToExpr(ctx);
 		} else {
 			currentTypeAnnotation.getExprParams_mutable().add(ctxToExpr(ctx));
 		}
@@ -231,18 +231,18 @@ public class MyToodleListener implements ToodleListener {
 
 	@Override
 	public void enterConst_definition(Const_definitionContext ctx) {
-		scopes.push(Scope.CONST_DEFINITION);
+		scopes.push(Scope.VAR_DEFINITION);
 		// no op
 	}
 
 	@Override
 	public void exitConst_definition(Const_definitionContext ctx) {
 		final Scope popped = scopes.pop();
-		assert popped == Scope.CONST_DEFINITION;
+		assert popped == Scope.VAR_DEFINITION;
 
 		final String name = ctx.getToken(ToodleLexer.VARIABLE, 0).getText().substring(variablePrefix.length());
 
-		currentType.addConstDefinition(name, currentConstValue);
+		currentType.addVarDefinition(name, currentVarValue);
 
 	}
 }
