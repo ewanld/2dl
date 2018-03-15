@@ -23,7 +23,6 @@ import com.github.toodle.ToodleParser.ExprContext;
 import com.github.toodle.ToodleParser.StatementContext;
 import com.github.toodle.ToodleParser.StringContext;
 import com.github.toodle.ToodleParser.TypeContext;
-import com.github.toodle.ToodleParser.TypeParamContext;
 import com.github.toodle.ToodleParser.TypeParamsContext;
 import com.github.toodle.model.Expr;
 import com.github.toodle.model.SourceLocation;
@@ -34,7 +33,7 @@ import com.github.toodle.model.Var;
 
 public class MyToodleListener implements ToodleListener {
 	public static final String ROOT_TYPE_NAME = "$root";
-	private final Type rootType = new Type(ROOT_TYPE_NAME, null);
+	private final Type rootType = new Type(ROOT_TYPE_NAME, null, null);
 	private Type currentType = rootType;
 	private TypeAnnotation currentTypeAnnotation;
 	private Expr currentVarValue;
@@ -240,20 +239,8 @@ public class MyToodleListener implements ToodleListener {
 	public void exitConst_definition(Const_definitionContext ctx) {
 		final Scope popped = scopes.pop();
 		assert popped == Scope.VAR_DEFINITION;
-
 		final String name = ctx.getToken(ToodleLexer.VARIABLE, 0).getText().substring(variablePrefix.length());
-
 		currentType.addVarDefinition(name, currentVarValue);
 
-	}
-
-	@Override
-	public void enterTypeParam(TypeParamContext ctx) {
-		// no op
-	}
-
-	@Override
-	public void exitTypeParam(TypeParamContext ctx) {
-		// no op
 	}
 }
