@@ -9,7 +9,7 @@ definitions
 	;
 
 statement
-	: definition | alias_definition | const_definition
+	: definition | alias_definition | let_definition
 	;
 
 alias_definition
@@ -17,7 +17,7 @@ alias_definition
 	'alias' IDENT '=' type
 	;
 
-const_definition
+let_definition
 	:
 	'const' VARIABLE '=' expr
 	;

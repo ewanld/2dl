@@ -16,7 +16,7 @@ import com.github.toodle.ToodleLexer;
 import com.github.toodle.ToodleListener;
 import com.github.toodle.ToodleParser.Alias_definitionContext;
 import com.github.toodle.ToodleParser.AnnotationContext;
-import com.github.toodle.ToodleParser.Const_definitionContext;
+import com.github.toodle.ToodleParser.Let_definitionContext;
 import com.github.toodle.ToodleParser.DefinitionContext;
 import com.github.toodle.ToodleParser.DefinitionsContext;
 import com.github.toodle.ToodleParser.ExprContext;
@@ -230,13 +230,13 @@ public class MyToodleListener implements ToodleListener {
 	}
 
 	@Override
-	public void enterConst_definition(Const_definitionContext ctx) {
+	public void enterLet_definition(Let_definitionContext ctx) {
 		scopes.push(Scope.VAR_DEFINITION);
 		// no op
 	}
 
 	@Override
-	public void exitConst_definition(Const_definitionContext ctx) {
+	public void exitLet_definition(Let_definitionContext ctx) {
 		final Scope popped = scopes.pop();
 		assert popped == Scope.VAR_DEFINITION;
 		final String name = ctx.getToken(ToodleLexer.VARIABLE, 0).getText().substring(variablePrefix.length());
