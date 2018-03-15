@@ -33,7 +33,7 @@ import com.github.toodle.model.Var;
 
 public class MyToodleListener implements ToodleListener {
 	public static final String ROOT_TYPE_NAME = "$root";
-	private final Type rootType = new Type(ROOT_TYPE_NAME, null, null);
+	private final Type rootType = new Type(ROOT_TYPE_NAME, null);
 	private Type currentType = rootType;
 	private TypeAnnotation currentTypeAnnotation;
 	private Expr currentVarValue;

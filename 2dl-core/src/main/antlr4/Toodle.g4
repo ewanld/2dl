@@ -31,13 +31,9 @@ type
 	;
 
 typeParams
-	: typeParam (',' typeParam)*
+	: type (',' type)*
 	;
 
-typeParam
-	: type
-	;
-	
 annotation
 	: IDENT ('(' expr (',' expr)* ')')?
 	;
@@ -50,49 +46,19 @@ string
 	: IDENT | QUOTED_STRING | MULTILINE_STRING
 	;
 
-MULTILINE_STRING
-	:
-	'"""' (ESC | ~ ["\\])* '"""'
-	;
-	
-QUOTED_STRING
-   : '"' (ESC | ~ ["\\])* '"'
-   ;
-   
-NUMBER
-   : '-'? INT ('.' [0-9] +)? EXP?
-   ;
-  
-fragment INT
-   : '0' | [1-9] [0-9]*
-   ;
-  
-fragment ESC
-   : '\\' (["\\/bfnrt] | UNICODE)
-   ;
-   
-fragment UNICODE
-   : 'u' HEX HEX HEX HEX
-   ;
-   
-fragment HEX
-   : [0-9a-fA-F]
-   ;
+fragment INT: '0' | [1-9] [0-9]*;
+fragment ESC: '\\' (["\\/bfnrt] | UNICODE);
+fragment UNICODE: 'u' HEX HEX HEX HEX;
+fragment HEX: [0-9a-fA-F];
+fragment EXP: [Ee] [+\-]? INT;
 
-fragment EXP
-   : [Ee] [+\-]? INT
-   ;
-
-VARIABLE
-	: '$' [a-zA-Z0-9_\-*]+
-	;
-	
-IDENT
-	: [a-zA-Z0-9_\-*]+
-	;
-
+MULTILINE_STRING: '"""' (ESC | ~ ["\\])* '"""';
+QUOTED_STRING: '"' (ESC | ~ ["\\])* '"';
+NUMBER: '-'? INT ('.' [0-9] +)? EXP?;
+VARIABLE: '$' [a-zA-Z0-9_\-*]+;
+IDENT: [a-zA-Z0-9_*]+;
 NL: [\r\n];
-WS : [ \t]+ -> skip ;
+WS: [ \t]+ -> skip ;
 CONTINUATION_LINE: '\\' [\r\n]+ -> skip;
 COMMENT:            '/*' .*? '*/'    -> channel(HIDDEN);
 LINE_COMMENT:       '//' ~[\r\n]*    -> channel(HIDDEN);
