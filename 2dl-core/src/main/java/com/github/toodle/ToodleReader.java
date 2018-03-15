@@ -42,13 +42,15 @@ public class ToodleReader {
 				final Type metaSchemaRootType = read(metaSchemaReader);
 				final ToodleSchema schemaValidator = new ToodleSchema(metaSchemaRootType);
 				if (!schemaValidator.validate(schemaRootType)) {
-					throw new ToodleValidationException(schemaValidator.getViolations());
+					throw new ToodleValidationException("Schema validation failed. Violations were found:",
+							schemaValidator.getViolations());
 				}
 
 				// validate definitions against schema
 				final ToodleSchema validator = new ToodleSchema(schemaRootType);
 				if (!validator.validate(rootType)) {
-					throw new ToodleValidationException(validator.getViolations());
+					throw new ToodleValidationException("Validation failed. Violations were found:",
+							validator.getViolations());
 				}
 			}
 		}
