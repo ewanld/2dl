@@ -10,9 +10,9 @@ element: type abstract {
 	description: annotation<string>
 }
 
-array: type extends(element) minTypeParamCount(0) maxTypeParamCount(1)
+array: type extends(element) minTypeParamCount(0) maxTypeParamCount(10)
 
-string: type extends(element2) {
+string: type extends(element) {
 	length: annotation<int>
 	minLength: annotation<int>
 	maxLength: annotation<int>

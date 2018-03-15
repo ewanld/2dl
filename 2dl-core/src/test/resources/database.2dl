@@ -5,8 +5,10 @@ database: object {
 
 alias nstring = string nullable
 
+let $todo = "TODO"
+
 table: object {
-	name: string
+	name: string description($todo)
 	type: string
 	columns: array<column>
 }

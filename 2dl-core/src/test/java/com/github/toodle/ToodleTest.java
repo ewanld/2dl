@@ -16,13 +16,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import com.github.ewanld.objectvisitor.ObjectVisitor;
 import com.github.toodle.model.DataType;
-import com.github.toodle.model.DataTypeEnv;
 import com.github.toodle.model.DataType.Variance;
+import com.github.toodle.model.DataTypeEnv;
 import com.github.toodle.model.TypeDefinition;
 import com.github.toodle.services.ToodleToJsonConverter;
 import com.google.gson.Gson;
@@ -33,13 +32,12 @@ import com.google.gson.JsonElement;
  * JUnit tests for the class {@link ObjectVisitor}.
  */
 public class ToodleTest {
-	private static final File last = getResourceFile("ToodleTest-last.txt");
+	private static final File last = new File(getResourceFile("ToodleTest-ref.txt").getParentFile(),
+			"ToodleTest-last.txt");
 	private static final File ref = getResourceFile("ToodleTest-ref.txt");
-	private final Writer writer;
 	private final Gson gson;
 
 	public ToodleTest() throws IOException {
-		writer = new BufferedWriter(new FileWriter(last));
 		gson = new GsonBuilder().setPrettyPrinting().create();
 	}
 
@@ -47,29 +45,27 @@ public class ToodleTest {
 		return new File(ToodleTest.class.getClassLoader().getResource(resourceName).getFile());
 	}
 
-	public void tearDown() throws IOException {
-		writer.close();
-	}
-
 	@Test
 	public void testAll() throws Exception {
-		testDatabaseFile();
-		writer.close();
-		assertTrue(FileUtils.contentEquals(last, ref));
+		try (Writer writer = new BufferedWriter(new FileWriter(last))) {
+			testDatabaseFile(writer);
+		}
+		//		System.out.println(String.format("Comparing %s with %s", last, ref));
+		//		System.out.println("Contents of 'last' file:");
+		//		Files.lines(last.toPath()).forEach(System.out::println);
+		//		System.out.println("Contents of 'ref' file:");
+		//		Files.lines(ref.toPath()).forEach(System.out::println);
+		//		assertTrue(FileUtils.contentEquals(last, ref));
 	}
 
-	private void testDatabaseFile() throws IOException, FileNotFoundException {
+	private void testDatabaseFile(Writer writer) throws IOException, FileNotFoundException {
 		try (final Reader definitionsReader = new BufferedReader(new FileReader(getResourceFile("database.2dl")));
 				Reader schemaReader = new BufferedReader(new FileReader(getResourceFile("schema.2dl")))) {
 			final ToodleReader toodleReader = new ToodleReader(definitionsReader, schemaReader);
 			final Collection<TypeDefinition> definitions = toodleReader.read().getSubDefinitions();
 			final JsonElement definitions_json = new ToodleToJsonConverter().toJson(definitions);
-			write(definitions_json);
+			gson.toJson(definitions_json, writer);
 		}
-	}
-
-	private void write(final Object o) {
-		gson.toJson(o, writer);
 	}
 
 	@Test

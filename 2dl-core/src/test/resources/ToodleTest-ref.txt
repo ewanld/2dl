@@ -32,7 +32,12 @@
         {
           "name": "name",
           "type": {
-            "name": "string"
+            "name": "string",
+            "annotations": {
+              "description": [
+                "TODO"
+              ]
+            }
           }
         },
         {

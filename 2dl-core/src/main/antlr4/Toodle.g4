@@ -19,7 +19,7 @@ alias_definition
 
 let_definition
 	:
-	'const' VARIABLE '=' expr
+	'let' VARIABLE '=' expr
 	;
 
 definition
