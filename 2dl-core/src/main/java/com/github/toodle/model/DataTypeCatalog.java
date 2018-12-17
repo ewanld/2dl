@@ -7,7 +7,7 @@ import java.util.Map;
 
 import com.github.toodle.model.DataTypeDefinition.Variance;
 
-public class DataTypeEnv {
+public class DataTypeCatalog {
 	public static final String TYPE_ANY = "any";
 	public static final String TYPE_MAP = "map";
 	public static final String TYPE_ARRAY = "array";
@@ -19,11 +19,11 @@ public class DataTypeEnv {
 
 	private final Map<String, DataTypeDefinition> defs = new HashMap<>();
 
-	public DataTypeEnv() {
+	public DataTypeCatalog() {
 		this(Collections.emptyList());
 	}
 
-	public DataTypeEnv(Collection<DataTypeDefinition> definitions) {
+	public DataTypeCatalog(Collection<DataTypeDefinition> definitions) {
 		definitions.forEach(d -> defs.put(d.getName(), d));
 	}
 
@@ -35,8 +35,8 @@ public class DataTypeEnv {
 		defs.put(dataType.getName(), dataType);
 	}
 
-	public static DataTypeEnv createBuiltinEnv() {
-		final DataTypeEnv env = new DataTypeEnv();
+	public static DataTypeCatalog createBuiltinEnv() {
+		final DataTypeCatalog env = new DataTypeCatalog();
 
 		final DataTypeParamDefinition anyCovariant = new DataTypeParamDefinition(TYPE_ANY, Variance.COVARIANT);
 		final DataTypeParamDefinition primitiveCovariant = new DataTypeParamDefinition(TYPE_PRIMITIVE,

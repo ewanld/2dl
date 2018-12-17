@@ -154,9 +154,9 @@ public class Expr {
 
 	public DataType getType() {
 		if (isString()) {
-			return new DataType(DataTypeEnv.TYPE_STRING);
+			return new DataType(DataTypeCatalog.TYPE_STRING);
 		} else if (isBigDecimal()) {
-			return new DataType(DataTypeEnv.TYPE_NUMBER);
+			return new DataType(DataTypeCatalog.TYPE_NUMBER);
 		} else {
 			return null;
 		}

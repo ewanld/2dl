@@ -18,19 +18,15 @@ import java.util.stream.Stream;
 
 import org.junit.Test;
 
-import com.github.ewanld.objectvisitor.ObjectVisitor;
 import com.github.toodle.model.DataType;
-import com.github.toodle.model.DataType.Variance;
-import com.github.toodle.model.DataTypeEnv;
+import com.github.toodle.model.DataTypeDefinition;
+import com.github.toodle.model.DataTypeCatalog;
 import com.github.toodle.model.TypeDefinition;
 import com.github.toodle.services.ToodleToJsonConverter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 
-/**
- * JUnit tests for the class {@link ObjectVisitor}.
- */
 public class ToodleTest {
 	private static final File last = new File(getResourceFile("ToodleTest-ref.txt").getParentFile(),
 			"ToodleTest-last.txt");
@@ -70,19 +66,14 @@ public class ToodleTest {
 
 	@Test
 	public void testDataTypes() {
-		final DataTypeEnv env = DataTypeEnv.createBuiltinEnv();
-		assertTrue(env.isSubstitute(dataType(DataTypeEnv.TYPE_ANY), dataType(DataTypeEnv.TYPE_ANY)));
-		assertFalse(env.isSubstitute(DataTypeEnv.TYPE_ANY, DataTypeEnv.TYPE_STRING, Variance.COVARIANT));
-		assertTrue(env.isSubstitute(DataTypeEnv.TYPE_STRING, DataTypeEnv.TYPE_ANY, Variance.COVARIANT));
-		assertTrue(env.isSubstitute(DataTypeEnv.TYPE_ANY, DataTypeEnv.TYPE_STRING, Variance.CONTRAVARIANT));
-		assertFalse(env.isSubstitute(DataTypeEnv.TYPE_STRING, DataTypeEnv.TYPE_ANY, Variance.CONTRAVARIANT));
+		final DataTypeCatalog env = DataTypeCatalog.createBuiltinEnv();
 
-		final DataType string_t = dataType(DataTypeEnv.TYPE_STRING);
-		final DataType any_t = dataType(DataTypeEnv.TYPE_ANY);
-		final DataType arrayOfString = dataType(DataTypeEnv.TYPE_ARRAY, DataTypeEnv.TYPE_STRING);
-		final DataType arrayOfArrayOfString = new DataType(DataTypeEnv.TYPE_ARRAY,
-				dataType(DataTypeEnv.TYPE_ARRAY, DataTypeEnv.TYPE_STRING));
-		final DataType arrayOfAny = dataType(DataTypeEnv.TYPE_ARRAY, DataTypeEnv.TYPE_ANY);
+		final DataType string_t = dataType(DataTypeCatalog.TYPE_STRING);
+		final DataType any_t = dataType(DataTypeCatalog.TYPE_ANY);
+		final DataType arrayOfString = dataType(DataTypeCatalog.TYPE_ARRAY, DataTypeCatalog.TYPE_STRING);
+		final DataType arrayOfArrayOfString = new DataType(DataTypeCatalog.TYPE_ARRAY,
+				dataType(DataTypeCatalog.TYPE_ARRAY, DataTypeCatalog.TYPE_STRING));
+		final DataType arrayOfAny = dataType(DataTypeCatalog.TYPE_ARRAY, DataTypeCatalog.TYPE_ANY);
 
 		assertTrue(env.isSubstitute(string_t, any_t));
 		assertFalse(env.isSubstitute(any_t, string_t));
@@ -93,6 +84,15 @@ public class ToodleTest {
 
 		assertTrue(env.isSubstitute(arrayOfArrayOfString, arrayOfAny));
 		assertFalse(env.isSubstitute(arrayOfAny, arrayOfArrayOfString));
+
+		final DataTypeDefinition any_def = env.get(DataTypeCatalog.TYPE_ANY);
+		final DataTypeDefinition bool_def = env.get(DataTypeCatalog.TYPE_BOOL);
+		final DataTypeDefinition int_def = env.get(DataTypeCatalog.TYPE_INT);
+		final DataTypeDefinition number_def = env.get(DataTypeCatalog.TYPE_NUMBER);
+		final DataTypeDefinition array_def = env.get(DataTypeCatalog.TYPE_ARRAY);
+		final DataTypeDefinition primitive_def = env.get(DataTypeCatalog.TYPE_PRIMITIVE);
+		assertEquals(DataTypeDefinition.lowestCommonAncestor(bool_def, int_def), primitive_def);
+
 	}
 
 	public static DataType dataType(String name, String... paramTypes_str) {
