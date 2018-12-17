@@ -39,11 +39,15 @@ annotation
 	;
 
 expr
-	: NUMBER | string | VARIABLE
+	: NUMBER | string | VARIABLE | array
 	;
 
 string
 	: IDENT | QUOTED_STRING | MULTILINE_STRING
+	;
+
+array
+	: '[' NL* (expr NL*)* ']'
 	;
 
 fragment INT: '0' | [1-9] [0-9]*;

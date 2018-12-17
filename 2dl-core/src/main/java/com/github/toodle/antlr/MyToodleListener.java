@@ -2,6 +2,7 @@ package com.github.toodle.antlr;
 
 import java.math.BigDecimal;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.unbescape.java.JavaEscape;
 
@@ -16,6 +18,7 @@ import com.github.toodle.ToodleLexer;
 import com.github.toodle.ToodleListener;
 import com.github.toodle.ToodleParser.Alias_definitionContext;
 import com.github.toodle.ToodleParser.AnnotationContext;
+import com.github.toodle.ToodleParser.ArrayContext;
 import com.github.toodle.ToodleParser.Let_definitionContext;
 import com.github.toodle.ToodleParser.DefinitionContext;
 import com.github.toodle.ToodleParser.DefinitionsContext;
@@ -111,9 +114,19 @@ public class MyToodleListener implements ToodleListener {
 			return new Expr(s);
 
 		} else if (ctx instanceof ExprContext) {
-			final ParserRuleContext ctx_expr = (ParserRuleContext) ctx;
+			final ExprContext ctx_expr = (ExprContext) ctx;
 			final Expr child = ctxToExpr(ctx_expr.getChild(0));
 			return child;
+
+		} else if (ctx instanceof ArrayContext) {
+			final ArrayContext ctx_array = (ArrayContext) ctx;
+			final List<Expr> children = new ArrayList<>();
+			// ignore 1st and last token ('[' and ']')
+			for (int i = 1; i < ctx_array.getChildCount() - 1; i++) {
+				final ParseTree child = ctx_array.getChild(i);
+				children.add(ctxToExpr(child));
+			}
+			return new Expr(children);
 
 		} else if (ctx instanceof TerminalNode) {
 			final TerminalNode terminalNode = (TerminalNode) ctx;
@@ -123,12 +136,10 @@ public class MyToodleListener implements ToodleListener {
 			} else if (terminalType == ToodleLexer.VARIABLE) {
 				return new Expr(new Var(terminalNode.getText().substring(variablePrefix.length())));
 			} else {
-				throw new RuntimeException("Unexpected token type: " + terminalNode.getSymbol().getType());
-
+				throw new RuntimeException("Unexpected token: " + terminalNode.getSymbol().getText());
 			}
-		} else
 
-		{
+		} else {
 			throw new RuntimeException("Unknown type: " + ctx.getClass());
 		}
 	}
@@ -242,5 +253,16 @@ public class MyToodleListener implements ToodleListener {
 		final String name = ctx.getToken(ToodleLexer.VARIABLE, 0).getText().substring(variablePrefix.length());
 		currentType.addVarDefinition(name, currentVarValue);
 
+	}
+
+	@Override
+	public void enterArray(ArrayContext ctx) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void exitArray(ArrayContext ctx) {
+		// TODO Auto-generated method stub
 	}
 }
