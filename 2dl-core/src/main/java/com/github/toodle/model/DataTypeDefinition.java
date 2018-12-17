@@ -3,20 +3,27 @@ package com.github.toodle.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DataTypeDefinition {
 	private final String name;
 	private final List<DataTypeParamDefinition> paramTypes = new ArrayList<>();
-	private final String superType;
+	private final DataTypeDefinition superType;
 
-	public DataTypeDefinition(String name, String superType, Collection<DataTypeParamDefinition> paramTypes) {
+	public enum Variance {
+		COVARIANT, CONTRAVARIANT
+	}
+
+	public DataTypeDefinition(String name, DataTypeDefinition superType,
+			Collection<DataTypeParamDefinition> paramTypes) {
 		this.name = name;
 		this.paramTypes.addAll(paramTypes);
 		this.superType = superType;
 	}
 
-	public DataTypeDefinition(String name, String superType, DataTypeParamDefinition... paramTypes) {
+	public DataTypeDefinition(String name, DataTypeDefinition superType, DataTypeParamDefinition... paramTypes) {
 		this(name, superType, Arrays.asList(paramTypes));
 	}
 
@@ -24,7 +31,7 @@ public class DataTypeDefinition {
 		return superType == null;
 	}
 
-	public String getSuperType() {
+	public DataTypeDefinition getSuperType() {
 		return superType;
 	}
 
@@ -38,6 +45,29 @@ public class DataTypeDefinition {
 
 	public String getName() {
 		return name;
+	}
+
+	/**
+	 * @param a
+	 * @param b
+	 * @return
+	 * @see <a href="http://will.thimbleby.net/algorithms/doku.php?id=lowest_common_ancestor">will.thimbleby.net</a>
+	 */
+	public static DataTypeDefinition lowestCommonAncestor(DataTypeDefinition a, DataTypeDefinition b) {
+		// Find all of a's parents.
+		final Set<DataTypeDefinition> a_parents = new HashSet<>();
+		while (a != null) {
+			a_parents.add(a);
+			a = a.getSuperType();
+		}
+
+		// Find the first intersection with b's parents.
+		while (b != null) {
+			if (a_parents.contains(b)) return b;
+			b = b.getSuperType();
+		}
+
+		return null;
 	}
 
 }

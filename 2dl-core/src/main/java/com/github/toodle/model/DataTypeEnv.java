@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.github.toodle.model.DataType.Variance;
+import com.github.toodle.model.DataTypeDefinition.Variance;
 
 public class DataTypeEnv {
 	public static final String TYPE_ANY = "any";
@@ -42,20 +42,26 @@ public class DataTypeEnv {
 		final DataTypeParamDefinition primitiveCovariant = new DataTypeParamDefinition(TYPE_PRIMITIVE,
 				Variance.COVARIANT);
 
-		// @formatter:off
-		env.add(new DataTypeDefinition(TYPE_ANY, null));
-		env.add(new DataTypeDefinition(		TYPE_ARRAY, TYPE_ANY, anyCovariant));
-		env.add(new DataTypeDefinition(		TYPE_MAP, TYPE_ANY, primitiveCovariant, anyCovariant));
-		env.add(new DataTypeDefinition(TYPE_PRIMITIVE, TYPE_ANY));
-		env.add(new DataTypeDefinition(		TYPE_STRING, TYPE_PRIMITIVE));
-		env.add(new DataTypeDefinition(				TYPE_BOOL, TYPE_STRING));
-		env.add(new DataTypeDefinition(		TYPE_NUMBER, TYPE_PRIMITIVE));
-		env.add(new DataTypeDefinition(				TYPE_INT, TYPE_NUMBER));
-		// @formatter:on
+		final DataTypeDefinition any = new DataTypeDefinition(TYPE_ANY, null);
+		env.add(any);
+		final DataTypeDefinition array = new DataTypeDefinition(TYPE_ARRAY, any, anyCovariant);
+		env.add(array);
+		final DataTypeDefinition map = new DataTypeDefinition(TYPE_MAP, any, primitiveCovariant, anyCovariant);
+		env.add(map);
+		final DataTypeDefinition primitive = new DataTypeDefinition(TYPE_PRIMITIVE, any);
+		env.add(primitive);
+		final DataTypeDefinition string = new DataTypeDefinition(TYPE_STRING, primitive);
+		env.add(string);
+		final DataTypeDefinition bool = new DataTypeDefinition(TYPE_BOOL, string);
+		env.add(bool);
+		final DataTypeDefinition number = new DataTypeDefinition(TYPE_NUMBER, primitive);
+		env.add(number);
+		final DataTypeDefinition int_t = new DataTypeDefinition(TYPE_INT, number);
+		env.add(int_t);
 		return env;
 	}
 
-	public boolean isValid(DataType dataType) {
+	private boolean isValid(DataType dataType) {
 		final DataTypeDefinition def = get(dataType.getName());
 		if (def == null) return false;
 		final int paramCount = def.getParamTypes().size();
@@ -68,17 +74,17 @@ public class DataTypeEnv {
 		return true;
 	}
 
-	public boolean isSubstitute(String actual, String expected, Variance variance) {
+	private boolean isSubstitute(String actual, String expected, Variance variance) {
 		if (actual.equals(expected)) return true;
 		final DataTypeDefinition type = defs.get(actual);
 		final DataTypeDefinition expectedType = defs.get(expected);
 		switch (variance) {
 		case COVARIANT:
 			if (type.getSuperType() == null) return false;
-			return isSubstitute(type.getSuperType(), expected, variance);
+			return isSubstitute(type.getSuperType().getName(), expected, variance);
 		case CONTRAVARIANT:
 			if (expectedType.getSuperType() == null) return false;
-			return isSubstitute(actual, expectedType.getSuperType(), variance);
+			return isSubstitute(actual, expectedType.getSuperType().getName(), variance);
 		default:
 			throw new RuntimeException();
 		}
@@ -102,4 +108,21 @@ public class DataTypeEnv {
 		return true;
 	}
 
+	public boolean isSubstitute(Expr expr, DataType expected) {
+		final String typeName = expected.getName();
+		if (typeName.equals(TYPE_ANY)) {
+			return true;
+		} else if (typeName.equals(TYPE_STRING)) {
+			return expr.isString();
+		} else if (typeName.equals(TYPE_PRIMITIVE)) {
+			return expr.isPrimitive();
+		} else if (typeName.equals(TYPE_INT)) {
+			return expr.isInt();
+		} else if (typeName.equals(TYPE_NUMBER)) {
+			return expr.isBigDecimal();
+		} else if (typeName.equals(TYPE_BOOL)) {
+			return expr.getAsBoolean();
+		}
+		return true;
+	}
 }

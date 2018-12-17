@@ -1,6 +1,6 @@
 package com.github.toodle.model;
 
-import com.github.toodle.model.DataType.Variance;
+import com.github.toodle.model.DataTypeDefinition.Variance;
 
 public class DataTypeParamDefinition {
 	private final DataType dataType;
