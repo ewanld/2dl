@@ -64,7 +64,7 @@ public class ToodleWriter {
 
 	private void writeVarDefinition(VarDefinition var) {
 		writeIndent();
-		write("const %s = %s", var.getName(), var.getValue().toLiteral());
+		write("let %s = %s", var.getName(), var.getValue().toLiteral());
 		writeln();
 	}
 
