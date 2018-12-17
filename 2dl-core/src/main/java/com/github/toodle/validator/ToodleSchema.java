@@ -9,10 +9,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.github.toodle.model.TypeDefinition;
-import com.github.toodle.model.TypeParamCollection;
 import com.github.toodle.model.Type;
 import com.github.toodle.model.TypeAnnotation;
+import com.github.toodle.model.TypeDefinition;
+import com.github.toodle.model.TypeParamCollection;
 import com.github.toodle.services.ToodleVisitorWithContext;
 import com.github.visitorj.VisitResult;
 
