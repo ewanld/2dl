@@ -8,15 +8,6 @@ import java.util.Map;
 import com.github.toodle.model.DataTypeDefinition.Variance;
 
 public class DataTypeCatalog {
-	public static final String TYPE_ANY = "any";
-	public static final String TYPE_MAP = "map";
-	public static final String TYPE_ARRAY = "array";
-	public static final String TYPE_PRIMITIVE = "primitive";
-	public static final String TYPE_INT = "int";
-	public static final String TYPE_NUMBER = "number";
-	public static final String TYPE_BOOL = "bool";
-	public static final String TYPE_STRING = "string";
-
 	private final Map<String, DataTypeDefinition> defs = new HashMap<>();
 
 	public DataTypeCatalog() {
@@ -33,32 +24,6 @@ public class DataTypeCatalog {
 
 	public void add(DataTypeDefinition dataType) {
 		defs.put(dataType.getName(), dataType);
-	}
-
-	public static DataTypeCatalog createBuiltinEnv() {
-		final DataTypeCatalog env = new DataTypeCatalog();
-
-		final DataTypeParamDefinition anyCovariant = new DataTypeParamDefinition(TYPE_ANY, Variance.COVARIANT);
-		final DataTypeParamDefinition primitiveCovariant = new DataTypeParamDefinition(TYPE_PRIMITIVE,
-				Variance.COVARIANT);
-
-		final DataTypeDefinition any = new DataTypeDefinition(TYPE_ANY, null);
-		env.add(any);
-		final DataTypeDefinition array = new DataTypeDefinition(TYPE_ARRAY, any, anyCovariant);
-		env.add(array);
-		final DataTypeDefinition map = new DataTypeDefinition(TYPE_MAP, any, primitiveCovariant, anyCovariant);
-		env.add(map);
-		final DataTypeDefinition primitive = new DataTypeDefinition(TYPE_PRIMITIVE, any);
-		env.add(primitive);
-		final DataTypeDefinition string = new DataTypeDefinition(TYPE_STRING, primitive);
-		env.add(string);
-		final DataTypeDefinition bool = new DataTypeDefinition(TYPE_BOOL, string);
-		env.add(bool);
-		final DataTypeDefinition number = new DataTypeDefinition(TYPE_NUMBER, primitive);
-		env.add(number);
-		final DataTypeDefinition int_t = new DataTypeDefinition(TYPE_INT, number);
-		env.add(int_t);
-		return env;
 	}
 
 	private boolean isValid(DataType dataType) {
@@ -110,17 +75,17 @@ public class DataTypeCatalog {
 
 	public boolean isSubstitute(Expr expr, DataType expected) {
 		final String typeName = expected.getName();
-		if (typeName.equals(TYPE_ANY)) {
+		if (typeName.equals(BuiltinCatalog.TYPE_ANY)) {
 			return true;
-		} else if (typeName.equals(TYPE_STRING)) {
+		} else if (typeName.equals(BuiltinCatalog.TYPE_STRING)) {
 			return expr.isString();
-		} else if (typeName.equals(TYPE_PRIMITIVE)) {
+		} else if (typeName.equals(BuiltinCatalog.TYPE_PRIMITIVE)) {
 			return expr.isPrimitive();
-		} else if (typeName.equals(TYPE_INT)) {
+		} else if (typeName.equals(BuiltinCatalog.TYPE_INT)) {
 			return expr.isInt();
-		} else if (typeName.equals(TYPE_NUMBER)) {
+		} else if (typeName.equals(BuiltinCatalog.TYPE_NUMBER)) {
 			return expr.isBigDecimal();
-		} else if (typeName.equals(TYPE_BOOL)) {
+		} else if (typeName.equals(BuiltinCatalog.TYPE_BOOL)) {
 			return expr.getAsBoolean();
 		}
 		return true;

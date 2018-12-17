@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 
 import org.junit.Test;
 
+import com.github.toodle.model.BuiltinCatalog;
 import com.github.toodle.model.DataType;
 import com.github.toodle.model.DataTypeDefinition;
 import com.github.toodle.model.DataTypeCatalog;
@@ -66,14 +67,14 @@ public class ToodleTest {
 
 	@Test
 	public void testDataTypes() {
-		final DataTypeCatalog env = DataTypeCatalog.createBuiltinEnv();
+		final DataTypeCatalog env = BuiltinCatalog.get();
 
-		final DataType string_t = dataType(DataTypeCatalog.TYPE_STRING);
-		final DataType any_t = dataType(DataTypeCatalog.TYPE_ANY);
-		final DataType arrayOfString = dataType(DataTypeCatalog.TYPE_ARRAY, DataTypeCatalog.TYPE_STRING);
-		final DataType arrayOfArrayOfString = new DataType(DataTypeCatalog.TYPE_ARRAY,
-				dataType(DataTypeCatalog.TYPE_ARRAY, DataTypeCatalog.TYPE_STRING));
-		final DataType arrayOfAny = dataType(DataTypeCatalog.TYPE_ARRAY, DataTypeCatalog.TYPE_ANY);
+		final DataType string_t = dataType(BuiltinCatalog.TYPE_STRING);
+		final DataType any_t = dataType(BuiltinCatalog.TYPE_ANY);
+		final DataType arrayOfString = dataType(BuiltinCatalog.TYPE_ARRAY, BuiltinCatalog.TYPE_STRING);
+		final DataType arrayOfArrayOfString = new DataType(BuiltinCatalog.TYPE_ARRAY,
+				dataType(BuiltinCatalog.TYPE_ARRAY, BuiltinCatalog.TYPE_STRING));
+		final DataType arrayOfAny = dataType(BuiltinCatalog.TYPE_ARRAY, BuiltinCatalog.TYPE_ANY);
 
 		assertTrue(env.isSubstitute(string_t, any_t));
 		assertFalse(env.isSubstitute(any_t, string_t));
@@ -85,12 +86,12 @@ public class ToodleTest {
 		assertTrue(env.isSubstitute(arrayOfArrayOfString, arrayOfAny));
 		assertFalse(env.isSubstitute(arrayOfAny, arrayOfArrayOfString));
 
-		final DataTypeDefinition any_def = env.get(DataTypeCatalog.TYPE_ANY);
-		final DataTypeDefinition bool_def = env.get(DataTypeCatalog.TYPE_BOOL);
-		final DataTypeDefinition int_def = env.get(DataTypeCatalog.TYPE_INT);
-		final DataTypeDefinition number_def = env.get(DataTypeCatalog.TYPE_NUMBER);
-		final DataTypeDefinition array_def = env.get(DataTypeCatalog.TYPE_ARRAY);
-		final DataTypeDefinition primitive_def = env.get(DataTypeCatalog.TYPE_PRIMITIVE);
+		final DataTypeDefinition any_def = env.get(BuiltinCatalog.TYPE_ANY);
+		final DataTypeDefinition bool_def = env.get(BuiltinCatalog.TYPE_BOOL);
+		final DataTypeDefinition int_def = env.get(BuiltinCatalog.TYPE_INT);
+		final DataTypeDefinition number_def = env.get(BuiltinCatalog.TYPE_NUMBER);
+		final DataTypeDefinition array_def = env.get(BuiltinCatalog.TYPE_ARRAY);
+		final DataTypeDefinition primitive_def = env.get(BuiltinCatalog.TYPE_PRIMITIVE);
 		assertEquals(DataTypeDefinition.lowestCommonAncestor(bool_def, int_def), primitive_def);
 
 	}
